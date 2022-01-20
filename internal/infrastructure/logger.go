@@ -63,18 +63,18 @@ func (fx *FxLogger) LogEvent(event fxevent.Event) {
 			fx.Log.Error().Err(e.Err).Msgf("%s exits with error", e.FunctionName)
 		}
 	case *fxevent.Stopping:
-		log.Info().Msgf("Signal %s received. Stopping application...", e.Signal)
+		fx.Log.Info().Msgf("Signal %s received. Stopping application...", e.Signal)
 	case *fxevent.Stopped:
 		if e.Err != nil {
-			log.Info().Err(e.Err).Msgf("Failed to graceful stop application")
+			fx.Log.Info().Err(e.Err).Msgf("Failed to graceful stop application")
 		}
 	case *fxevent.RollingBack:
 	case *fxevent.RolledBack:
 	case *fxevent.Started:
 		if e.Err != nil {
-			log.Error().Err(e.Err).Msgf("Cannot start application")
+			fx.Log.Error().Err(e.Err).Msgf("Cannot start application")
 		} else {
-			log.Info().Msg("Application started")
+			fx.Log.Info().Msg("Application started")
 		}
 	case *fxevent.LoggerInitialized:
 	}
