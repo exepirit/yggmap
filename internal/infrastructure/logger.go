@@ -1,10 +1,12 @@
 package infrastructure
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/fx/fxevent"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -13,23 +15,36 @@ func NewLogger() Logger {
 		Out:        os.Stderr,
 		TimeFormat: time.RFC822,
 	})
-	return Logger{
-		logger: log.Logger,
-	}
+	return Logger{logger: log.Logger}
 }
 
 type Logger struct {
 	logger zerolog.Logger
+	fx     *FxLogger
+	gin    *GinLogger
 }
 
 func (log *Logger) Log() zerolog.Logger {
 	return log.logger
 }
 
-func NewFxLogger(logger Logger) fxevent.Logger {
-	return &FxLogger{
-		Log: logger.Log().With().Str("module", "fx").Logger(),
+func (log *Logger) GetFxLogger() fxevent.Logger {
+	if log.fx == nil {
+		log.fx = &FxLogger{
+			Log: log.Log().With().Str("module", "fx").Logger(),
+		}
 	}
+	return log.fx
+}
+
+func (log *Logger) GetGinLogger() gin.HandlerFunc {
+	if log.gin == nil {
+		log.gin = &GinLogger{
+			Log:       log.Log().With().Str("module", "server").Logger(),
+			SkipPaths: nil,
+		}
+	}
+	return log.gin.HandleRequest
 }
 
 type FxLogger struct {
@@ -77,5 +92,39 @@ func (fx *FxLogger) LogEvent(event fxevent.Event) {
 			fx.Log.Info().Msg("Application started")
 		}
 	case *fxevent.LoggerInitialized:
+	}
+}
+
+type GinLogger struct {
+	Log       zerolog.Logger
+	SkipPaths map[string]bool
+}
+
+func (log *GinLogger) HandleRequest(ctx *gin.Context) {
+	path := ctx.Request.URL.Path
+	raw := ctx.Request.URL.RawQuery
+
+	// Process request
+	ctx.Next()
+
+	// Log only when path is not being skipped
+	if _, ok := log.SkipPaths[path]; !ok {
+		if raw != "" {
+			path = path + "?" + raw
+		}
+
+		respSize := "-"
+		if size := ctx.Writer.Size(); size > 0 {
+			respSize = strconv.Itoa(size)
+		}
+
+		errors := ctx.Errors.ByType(gin.ErrorTypePrivate)
+		for _, err := range errors {
+			log.Log.Error().
+				Err(err).
+				Msgf("Error occurred while handling request %s %s", ctx.Request.Method, path)
+		}
+
+		log.Log.Info().Msgf("%s %s %d %s", ctx.Request.Method, path, ctx.Writer.Status(), respSize)
 	}
 }

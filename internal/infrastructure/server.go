@@ -6,8 +6,8 @@ type Server struct {
 	Gin *gin.Engine
 }
 
-func NewServer() Server {
-	return Server{
-		Gin: gin.Default(),
-	}
+func NewServer(logger Logger) Server {
+	engine := gin.New()
+	engine.Use(gin.Recovery(), logger.GetGinLogger())
+	return Server{Gin: engine}
 }
