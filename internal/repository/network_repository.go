@@ -93,10 +93,10 @@ func (repo *NetworkRepositoryMongoDb) networkAsDto(net *network.Network) *networ
 	return dto
 }
 
-func (repo *NetworkRepositoryMongoDb) edgesFromDto(dto *networkDto) []network.Edge {
-	edges := make([]network.Edge, len(dto.Edges))
+func (repo *NetworkRepositoryMongoDb) edgesFromDto(dto *networkDto) []*network.Edge {
+	edges := make([]*network.Edge, len(dto.Edges))
 	for i, e := range dto.Edges {
-		edges[i] = network.Edge{
+		edges[i] = &network.Edge{
 			From: network.MustParseKey(e.From),
 			To:   network.MustParseKey(e.To),
 		}

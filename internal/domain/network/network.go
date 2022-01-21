@@ -2,6 +2,7 @@ package network
 
 type Network struct {
 	Nodes []*Node
+	Edges []*Edge
 }
 
 func (net *Network) AddNode(node *Node) {
@@ -10,5 +11,12 @@ func (net *Network) AddNode(node *Node) {
 			return
 		}
 	}
+
 	net.Nodes = append(net.Nodes, node)
+	for _, peer := range node.Peers {
+		net.Edges = append(net.Edges, &Edge{
+			From: node.PublicKey,
+			To:   peer,
+		})
+	}
 }
