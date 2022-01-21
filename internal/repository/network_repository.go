@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/exepirit/yggmap/internal/domain/network"
-	"github.com/exepirit/yggmap/internal/domain/node"
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,7 +11,7 @@ import (
 
 const networkDocumentId = "default"
 
-func NewNetworkRepository(db infrastructure.Database) network.IRepository {
+func NewNetworkRepository(db infrastructure.Database) network.INetworkRepository {
 	return &NetworkRepositoryMongoDb{
 		collection: db.Database.Collection("network"),
 		nodes:      NewNodeRepository(db),
@@ -21,7 +20,7 @@ func NewNetworkRepository(db infrastructure.Database) network.IRepository {
 
 type NetworkRepositoryMongoDb struct {
 	collection *mongo.Collection
-	nodes      node.Repository
+	nodes      network.INodeRepository
 }
 
 func (repo *NetworkRepositoryMongoDb) Update(ctx context.Context, net *network.Network) error {
@@ -72,7 +71,7 @@ func (repo *NetworkRepositoryMongoDb) Get(ctx context.Context) (*network.Network
 
 type networkDto struct {
 	Id    string    `bson:"_id"`
-	Edges []edgeDto `bson:"Edges"`
+	Edges []edgeDto `bson:"edges"`
 }
 
 type edgeDto struct {
@@ -98,8 +97,8 @@ func (repo *NetworkRepositoryMongoDb) edgesFromDto(dto *networkDto) []network.Ed
 	edges := make([]network.Edge, len(dto.Edges))
 	for i, e := range dto.Edges {
 		edges[i] = network.Edge{
-			From: node.MustParseKey(e.From),
-			To:   node.MustParseKey(e.To),
+			From: network.MustParseKey(e.From),
+			To:   network.MustParseKey(e.To),
 		}
 	}
 	return edges

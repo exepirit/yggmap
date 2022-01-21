@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/exepirit/yggmap/internal/domain/network"
-	"github.com/exepirit/yggmap/internal/domain/node"
 	"github.com/exepirit/yggmap/pkg/adminapi"
 	"github.com/rs/zerolog/log"
 )
@@ -35,7 +34,7 @@ func (crawler *NetworkCrawler) node() *NodeCrawler {
 }
 
 // TODO: use context to cancel crawling process
-func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Network, root *node.Node) error {
+func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Network, root *network.Node) error {
 	scrapedNodes := make(map[string]nodeInfo)
 	scrapeQueue := newQueue()
 	scrapeQueue.push(root.PublicKey.String())
@@ -127,6 +126,6 @@ func (NetworkCrawler) deduplicateKeys(keys []string) []string {
 }
 
 type nodeInfo struct {
-	*node.Node
+	*network.Node
 	peers []string
 }

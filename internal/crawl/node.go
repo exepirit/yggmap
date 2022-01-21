@@ -2,7 +2,7 @@ package crawl
 
 import (
 	"fmt"
-	"github.com/exepirit/yggmap/internal/domain/node"
+	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/exepirit/yggmap/pkg/adminapi"
 	"strconv"
 	"strings"
@@ -12,14 +12,14 @@ type NodeCrawler struct {
 	Client *adminapi.Client
 }
 
-func (crawler NodeCrawler) GetNode(key string) (*node.Node, error) {
-	info := &node.Node{}
+func (crawler NodeCrawler) GetNode(key string) (*network.Node, error) {
+	info := &network.Node{}
 	selfInfo, err := crawler.Client.RemoteGetSelf(key)
 	if err != nil {
 		return info, fmt.Errorf("get basic node info: %w", err)
 	}
-	addr := node.MustParseKey(key).IPv6Address()
-	info.PublicKey = node.MustParseKey(selfInfo[addr].PublicKey)
+	addr := network.MustParseKey(key).IPv6Address()
+	info.PublicKey = network.MustParseKey(selfInfo[addr].PublicKey)
 	info.Coordinates = parseCoordinatesFromStr(selfInfo[addr].Coordinates)
 	info.AdditionalInfo = make(map[string]interface{})
 
@@ -39,11 +39,11 @@ func (crawler NodeCrawler) GetPeersKeys(targetKey string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	addr := node.MustParseKey(targetKey).IPv6Address()
+	addr := network.MustParseKey(targetKey).IPv6Address()
 	return peers[addr].Keys, nil
 }
 
-func (crawler NodeCrawler) GetRoot() (*node.Node, error) {
+func (crawler NodeCrawler) GetRoot() (*network.Node, error) {
 	selfInfo, err := crawler.Client.GetSelf()
 	if err != nil {
 		return nil, err
