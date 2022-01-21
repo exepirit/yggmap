@@ -49,12 +49,12 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 		if err != nil {
 			log.Warn().
 				Str("nodeKey", key).Err(err).
-				Msg("Cannot collect scrapedNode")
+				Msg("Cannot collect node")
 			continue
 		}
 		scrapedNodes[key] = node
 		log.Info().Str("nodeKey", key).
-			Msgf("Scraped scrapedNode %s", node.PublicKey.IPv6Address())
+			Msgf("Scraped node %s", node.PublicKey.IPv6Address())
 
 		for _, peer := range node.Peers {
 			peerKey := peer.String()
@@ -64,7 +64,7 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 			if !pending && !crawled {
 				scrapeQueue.push(peerKey)
 			} else {
-				log.Debug().Msgf("Ignored scrapedNode %s. It already queued or scanned.", peer)
+				log.Debug().Msgf("Ignored node %s. It already queued or scanned.", peer)
 			}
 		}
 
@@ -81,16 +81,16 @@ func (crawler *NetworkCrawler) crawlOneNode(targetKey string) (*network.Node, er
 		return nil, fmt.Errorf("get info: %w", err)
 	}
 
-	nodePeers, err := crawler.node().GetPeersKeys(network.MustParseKey(targetKey))
+	node.Peers, err = crawler.node().GetPeersKeys(network.MustParseKey(targetKey))
 	if err != nil {
 		log.Warn().
 			Str("nodeKey", targetKey).Err(err).
 			Msg("Cannot get node peers. Part of network might not be scanned")
 	}
-	log.Debug().Msgf("Node %s have %d peers", targetKey, len(nodePeers))
+	log.Debug().Msgf("Node %s have %d peers", targetKey, len(node.Peers))
 
 	// node may have > 1 connection with other node, but it must not be displayed on map
-	nodePeers = crawler.deduplicateKeys(nodePeers)
+	node.Peers = crawler.deduplicateKeys(node.Peers)
 
 	return node, nil
 }

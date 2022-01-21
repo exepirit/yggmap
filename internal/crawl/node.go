@@ -39,7 +39,7 @@ func (crawler NodeCrawler) GetPeersKeys(targetKey network.PublicKey) ([]network.
 		return nil, err
 	}
 
-	peersKeys := peers[targetKey.String()].Keys
+	peersKeys := peers[targetKey.IPv6Address()].Keys
 	keys := make([]network.PublicKey, len(peersKeys))
 	for i, k := range peersKeys {
 		keys[i] = network.MustParseKey(k)
