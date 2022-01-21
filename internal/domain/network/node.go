@@ -3,6 +3,7 @@ package network
 type Node struct {
 	PublicKey      PublicKey
 	Coordinates    []int
+	Peers          []PublicKey
 	AdditionalInfo map[string]interface{}
 }
 

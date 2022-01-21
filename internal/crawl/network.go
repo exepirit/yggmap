@@ -35,7 +35,7 @@ func (crawler *NetworkCrawler) node() *NodeCrawler {
 
 // TODO: use context to cancel crawling process
 func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Network, root *network.Node) error {
-	scrapedNodes := make(map[string]nodeInfo)
+	scrapedNodes := make(map[string]*network.Node)
 	scrapeQueue := newQueue()
 	scrapeQueue.push(root.PublicKey.String())
 
@@ -45,53 +45,43 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 			continue
 		}
 
-		nodeFullInfo, err := crawler.crawlOneNode(key)
+		node, err := crawler.crawlOneNode(key)
 		if err != nil {
 			log.Warn().
 				Str("nodeKey", key).Err(err).
 				Msg("Cannot collect scrapedNode")
 			continue
 		}
-		scrapedNodes[key] = nodeFullInfo
+		scrapedNodes[key] = node
 		log.Info().Str("nodeKey", key).
-			Msgf("Scraped scrapedNode %s", nodeFullInfo.PublicKey.IPv6Address())
+			Msgf("Scraped scrapedNode %s", node.PublicKey.IPv6Address())
 
-		for _, peer := range nodeFullInfo.peers {
-			pending := scrapeQueue.contains(peer)
-			_, crawled := scrapedNodes[peer]
-			crawled = crawled || (peer == key)
+		for _, peer := range node.Peers {
+			peerKey := peer.String()
+			pending := scrapeQueue.contains(peerKey)
+			_, crawled := scrapedNodes[peerKey]
+			crawled = crawled || (peerKey == key)
 			if !pending && !crawled {
-				scrapeQueue.push(peer)
+				scrapeQueue.push(peerKey)
 			} else {
 				log.Debug().Msgf("Ignored scrapedNode %s. It already queued or scanned.", peer)
 			}
 		}
 
+		net.AddNode(node)
 		log.Debug().Msgf("%d nodes in crawl queue, %d scanned", scrapeQueue.length(), len(scrapedNodes))
 	}
 
-	for _, scrapedNode := range scrapedNodes {
-		net.AddNode(scrapedNode.Node)
-		for _, peerKey := range scrapedNode.peers {
-			peer, ok := scrapedNodes[peerKey]
-			if !ok {
-				log.Warn().Str("nodeKey", peerKey).
-					Msg("Couldn't find node in scraped nodes map. Part of network might not be displayed")
-				continue
-			}
-			net.AddConnection(scrapedNode.Node, peer.Node)
-		}
-	}
 	return nil
 }
 
-func (crawler *NetworkCrawler) crawlOneNode(targetKey string) (nodeInfo, error) {
-	nodeBase, err := crawler.node().GetNode(targetKey)
+func (crawler *NetworkCrawler) crawlOneNode(targetKey string) (*network.Node, error) {
+	node, err := crawler.node().GetNode(targetKey)
 	if err != nil {
-		return nodeInfo{}, fmt.Errorf("get info: %w", err)
+		return nil, fmt.Errorf("get info: %w", err)
 	}
 
-	nodePeers, err := crawler.node().GetPeersKeys(targetKey)
+	nodePeers, err := crawler.node().GetPeersKeys(network.MustParseKey(targetKey))
 	if err != nil {
 		log.Warn().
 			Str("nodeKey", targetKey).Err(err).
@@ -102,30 +92,23 @@ func (crawler *NetworkCrawler) crawlOneNode(targetKey string) (nodeInfo, error) 
 	// node may have > 1 connection with other node, but it must not be displayed on map
 	nodePeers = crawler.deduplicateKeys(nodePeers)
 
-	return nodeInfo{
-		Node:  nodeBase,
-		peers: nodePeers,
-	}, nil
+	return node, nil
 }
 
-func (NetworkCrawler) deduplicateKeys(keys []string) []string {
-	m := make(map[string]bool)
+func (NetworkCrawler) deduplicateKeys(keys []network.PublicKey) []network.PublicKey {
+	m := make(map[string]network.PublicKey)
 	for _, key := range keys {
-		if _, exists := m[key]; !exists {
-			m[key] = true
+		keyStr := key.String()
+		if _, exists := m[keyStr]; !exists {
+			m[keyStr] = key
 		}
 	}
 
-	keys = make([]string, len(m))
+	keys = make([]network.PublicKey, len(m))
 	i := 0
-	for key := range m {
+	for _, key := range m {
 		keys[i] = key
 		i++
 	}
 	return keys
-}
-
-type nodeInfo struct {
-	*network.Node
-	peers []string
 }

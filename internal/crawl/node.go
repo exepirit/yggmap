@@ -30,17 +30,21 @@ func (crawler NodeCrawler) GetNode(key string) (*network.Node, error) {
 	for k, v := range detailInfo[addr] {
 		info.AdditionalInfo[k] = v
 	}
-
 	return info, nil
 }
 
-func (crawler NodeCrawler) GetPeersKeys(targetKey string) ([]string, error) {
-	peers, err := crawler.Client.RemoteGetPeers(targetKey)
+func (crawler NodeCrawler) GetPeersKeys(targetKey network.PublicKey) ([]network.PublicKey, error) {
+	peers, err := crawler.Client.RemoteGetPeers(targetKey.String())
 	if err != nil {
 		return nil, err
 	}
-	addr := network.MustParseKey(targetKey).IPv6Address()
-	return peers[addr].Keys, nil
+
+	peersKeys := peers[targetKey.String()].Keys
+	keys := make([]network.PublicKey, len(peersKeys))
+	for i, k := range peersKeys {
+		keys[i] = network.MustParseKey(k)
+	}
+	return keys, nil
 }
 
 func (crawler NodeCrawler) GetRoot() (*network.Node, error) {
