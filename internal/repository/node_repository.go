@@ -73,13 +73,19 @@ func (repo *NodeRepositoryMongoDb) UpdateAll(ctx context.Context, nodes []*netwo
 			return fmt.Errorf("clean collection: %w", err)
 		}
 
-		nodesDto := make([]interface{}, len(nodes))
-		for i, node := range nodes {
-			nodesDto[i] = mapNodeToDto(node)
+		if len(nodes) > 0 {
+			nodesDto := make([]interface{}, len(nodes))
+			for i, node := range nodes {
+				nodesDto[i] = mapNodeToDto(node)
+			}
+
+			if _, err = repo.collection.InsertMany(sessionContext, nodesDto); err != nil {
+				return fmt.Errorf("put node into collection: %w", err)
+			}
 		}
 
-		if _, err = repo.collection.InsertMany(sessionContext, nodesDto); err != nil {
-			return fmt.Errorf("put node into collection: %w", err)
+		if err = session.CommitTransaction(sessionContext); err != nil {
+			return fmt.Errorf("commit transaction: %w", err)
 		}
 
 		return nil
