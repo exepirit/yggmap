@@ -72,6 +72,9 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 		log.Debug().Msgf("%d nodes in crawl queue, %d scanned", scrapeQueue.length(), len(scrapedNodes))
 	}
 
+	// crawled network may have links to nodes which destroyed during crawling
+	// it must be removed
+	removeGarbageLinks(net)
 	return nil
 }
 
@@ -111,4 +114,29 @@ func (NetworkCrawler) deduplicateKeys(keys []network.PublicKey) []network.Public
 		i++
 	}
 	return keys
+}
+
+func removeGarbageLinks(net *network.Network) {
+	isInNetwork := func(key network.PublicKey) bool {
+		for _, node := range net.Nodes {
+			if node.PublicKey.Equal(key) {
+				return true
+			}
+		}
+		return false
+	}
+
+	for _, node := range net.Nodes {
+		node.Peers = filterKeys(node.Peers, isInNetwork)
+	}
+}
+
+func filterKeys(keys []network.PublicKey, criteria func(key network.PublicKey) bool) []network.PublicKey {
+	result := make([]network.PublicKey, 0)
+	for _, key := range keys {
+		if criteria(key) {
+			result = append(result, key)
+		}
+	}
+	return result
 }

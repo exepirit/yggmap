@@ -31,6 +31,10 @@ func (key PublicKey) String() string {
 	return hex.EncodeToString(key)
 }
 
+func (key PublicKey) Equal(other PublicKey) bool {
+	return key.String() == other.String()
+}
+
 func (key PublicKey) IPv6Address() string {
 	buf := make([]byte, 32)
 	copy(buf[:], key[:])

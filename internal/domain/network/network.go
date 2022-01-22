@@ -10,6 +10,7 @@ func (net *Network) AddNode(node *Node) {
 			return
 		}
 	}
+	net.Nodes = append(net.Nodes, node)
 }
 
 func (net *Network) GetEdges() []Edge {
