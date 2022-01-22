@@ -27,7 +27,8 @@ func main() {
 		log.Fatal().Err(err).Msgf("Failed to connect to database")
 	}
 
-	netRepo := repository.NewNetworkRepository(database)
+	nodeRepo := repository.NewNodeRepository(database)
+	netRepo := repository.NewNetworkRepository(nodeRepo)
 
 	client := adminapi.Bind("unix:///var/run/yggdrasil.sock")
 	crawler := crawl.NetworkCrawler{Client: client}
@@ -38,7 +39,7 @@ func main() {
 	}
 
 	log.Info().Msg("Network successfully crawled!")
-	log.Info().Msgf("Collected %d nodes with %d connections", len(net.Nodes), len(net.Edges))
+	log.Info().Msgf("Collected %d nodes", len(net.Nodes))
 
 	if err = netRepo.Update(context.Background(), net); err != nil {
 		log.Error().Err(err).Msg("Failed to update network in database")
