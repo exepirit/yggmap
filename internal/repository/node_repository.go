@@ -7,6 +7,9 @@ import (
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 )
 
 func NewNodeRepository(db infrastructure.Database) network.INodeRepository {
@@ -17,26 +20,6 @@ func NewNodeRepository(db infrastructure.Database) network.INodeRepository {
 
 type NodeRepositoryMongoDb struct {
 	collection *mongo.Collection
-}
-
-func (repo *NodeRepositoryMongoDb) Put(ctx context.Context, node *network.Node) error {
-	_, err := repo.collection.InsertOne(ctx, mapNodeToDto(node))
-	return err
-}
-
-func (repo *NodeRepositoryMongoDb) PutOrUpdate(ctx context.Context, node *network.Node) error {
-	nodeObj := mapNodeToDto(node)
-	res := repo.collection.FindOneAndReplace(
-		ctx,
-		bson.D{{"_id", node.PublicKey.String()}},
-		nodeObj)
-
-	switch err := res.Err(); err {
-	case mongo.ErrNoDocuments:
-		return repo.Put(ctx, node)
-	default:
-		return err
-	}
 }
 
 func (repo *NodeRepositoryMongoDb) Get(ctx context.Context, key network.PublicKey) (*network.Node, error) {
@@ -68,6 +51,44 @@ func (repo *NodeRepositoryMongoDb) GetAll(ctx context.Context) ([]*network.Node,
 		nodes[i] = val.toNode()
 	}
 	return nodes, res.Err()
+}
+
+func (repo *NodeRepositoryMongoDb) UpdateAll(ctx context.Context, nodes []*network.Node) error {
+	wc := writeconcern.New(writeconcern.WMajority())
+	rc := readconcern.Snapshot()
+	txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
+
+	session, err := repo.collection.Database().Client().StartSession()
+	if err != nil {
+		return fmt.Errorf("open session: %w", err)
+	}
+	defer session.EndSession(ctx)
+
+	err = mongo.WithSession(ctx, session, func(sessionContext mongo.SessionContext) error {
+		if err = session.StartTransaction(txnOpts); err != nil {
+			return fmt.Errorf("start transaction: %w", err)
+		}
+
+		if _, err = repo.collection.DeleteMany(sessionContext, bson.D{}); err != nil {
+			return fmt.Errorf("clean collection: %w", err)
+		}
+
+		nodesDto := make([]interface{}, len(nodes))
+		for i, node := range nodes {
+			nodesDto[i] = mapNodeToDto(node)
+		}
+
+		if _, err = repo.collection.InsertMany(sessionContext, nodesDto); err != nil {
+			return fmt.Errorf("put node into collection: %w", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		_ = session.AbortTransaction(context.Background())
+	}
+	return err
 }
 
 type nodeDto struct {

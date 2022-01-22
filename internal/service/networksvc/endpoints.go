@@ -28,9 +28,10 @@ func (e *Endpoints) GetNetwork(ctx *gin.Context) {
 }
 
 func mapNetworkToDto(src *network.Network) NetworkDto {
+	edges := src.GetEdges()
 	dto := NetworkDto{
 		Nodes: make([]NodeDto, len(src.Nodes)),
-		Edges: make([]EdgeDto, len(src.Edges)),
+		Edges: make([]EdgeDto, len(edges)),
 	}
 	for i, node := range src.Nodes {
 		dto.Nodes[i] = NodeDto{
@@ -38,7 +39,7 @@ func mapNetworkToDto(src *network.Network) NetworkDto {
 			AdditionalInfo: node.AdditionalInfo,
 		}
 	}
-	for i, edge := range src.Edges {
+	for i, edge := range edges {
 		dto.Edges[i] = EdgeDto{
 			From: edge.From.String(),
 			To:   edge.To.String(),
