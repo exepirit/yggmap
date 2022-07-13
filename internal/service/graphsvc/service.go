@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/exepirit/yggmap/internal/factory"
-	"github.com/exepirit/yggmap/internal/graph"
 )
 
 type IService interface {
@@ -27,9 +26,5 @@ func (svc service) GetGraph(ctx context.Context) (*network.Graph, error) {
 	}
 
 	netGraph := factory.MakeGraphForNetwork(net)
-	layout := graph.RandomLayout{}
-	layout.Assign(netGraph)
-	layout.Run()
-
 	return netGraph, nil
 }

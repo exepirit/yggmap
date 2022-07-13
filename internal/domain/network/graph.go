@@ -2,7 +2,26 @@ package network
 
 type Graph struct {
 	Nodes []GraphNode
-	Edges map[string]string
+	Edges []Edge
+}
+
+func (graph Graph) GetNode(id string) *GraphNode {
+	for i := range graph.Nodes {
+		if graph.Nodes[i].GetID() == id {
+			return &graph.Nodes[i]
+		}
+	}
+	return nil
+}
+
+func (graph Graph) GetNeighbors(id string) []string {
+	neighbors := make([]string, 0)
+	for _, e := range graph.Edges {
+		if e.From.String() == id {
+			neighbors = append(neighbors, e.To.String())
+		}
+	}
+	return neighbors
 }
 
 type GraphNode struct {

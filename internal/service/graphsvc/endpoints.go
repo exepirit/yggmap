@@ -25,22 +25,27 @@ func (e Endpoints) GetGraph(ctx *gin.Context) {
 		return
 	}
 
-	result := &GraphDto{
-		Nodes: mapNodesToDto(netGraph.Nodes),
-		Edges: netGraph.Edges,
-	}
-	ctx.JSON(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, mapGraphToDto(netGraph))
 }
 
-func mapNodesToDto(nodes []network.GraphNode) []NodeDto {
-	result := make([]NodeDto, len(nodes))
-	for i, n := range nodes {
-		result[i] = NodeDto{
+func mapGraphToDto(graph *network.Graph) GraphDto {
+	dto := GraphDto{
+		Nodes: make([]NodeDto, len(graph.Nodes)),
+		Edges: make([]EdgeDto, len(graph.Edges)),
+	}
+	for i, n := range graph.Nodes {
+		dto.Nodes[i] = NodeDto{
 			ID:    n.GetID(),
 			Label: n.GetID()[len(n.GetID())-8:],
 			X:     n.X,
 			Y:     n.Y,
 		}
 	}
-	return result
+	for i, e := range graph.Edges {
+		dto.Edges[i] = EdgeDto{
+			From: e.From.String(),
+			To:   e.To.String(),
+		}
+	}
+	return dto
 }
