@@ -1,13 +1,14 @@
 package app
 
 import (
-	"github.com/exepirit/yggmap/internal/infrastructure"
 	"os"
+
+	"github.com/exepirit/yggmap/internal/infrastructure"
 )
 
 func LoadDbConfig() infrastructure.DatabaseConfig {
 	return infrastructure.DatabaseConfig{
-		URI:  os.Getenv("MONGODB_URI"),
-		Name: os.Getenv("MONGODB_NAME"),
+		Type:             os.Getenv("DB_TYPE"),
+		ConnectionString: os.Getenv("DB_CONNECTIONSTRING"),
 	}
 }

@@ -2,6 +2,9 @@ package app
 
 import (
 	"context"
+	"os"
+	"time"
+
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"github.com/exepirit/yggmap/internal/repository"
 	"github.com/exepirit/yggmap/internal/service/graphsvc"
@@ -10,8 +13,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/fx"
-	"os"
-	"time"
 )
 
 var Module = fx.Options(
@@ -27,7 +28,6 @@ var Module = fx.Options(
 func bootstrap(
 	lifecycle fx.Lifecycle,
 	server infrastructure.Server,
-	db infrastructure.Database,
 	routes server.Bindable,
 ) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{
@@ -44,7 +44,6 @@ func bootstrap(
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			_ = db.Client.Disconnect(ctx)
 			return nil
 		},
 	})
