@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"os"
+	"time"
+
 	"github.com/exepirit/yggmap/internal/crawl"
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"github.com/exepirit/yggmap/internal/repository"
 	"github.com/exepirit/yggmap/pkg/adminapi"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"os"
-	"time"
 )
 
 func main() {
@@ -19,8 +20,8 @@ func main() {
 	})
 
 	dbConf := infrastructure.DatabaseConfig{
-		URI:  os.Getenv("MONGODB_URI"),
-		Name: os.Getenv("MONGODB_NAME"),
+		Type:             os.Getenv("DB_TYPE"),
+		ConnectionString: os.Getenv("DB_CONNECTIONSTRING"),
 	}
 	database, err := infrastructure.NewDatabase(dbConf)
 	if err != nil {
