@@ -1,13 +1,14 @@
 package infrastructure
 
 import (
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/fx/fxevent"
-	"os"
-	"strconv"
-	"time"
 )
 
 func NewLogger() Logger {
@@ -104,8 +105,12 @@ func (log *GinLogger) HandleRequest(ctx *gin.Context) {
 	path := ctx.Request.URL.Path
 	raw := ctx.Request.URL.RawQuery
 
+	start := time.Now()
+
 	// Process request
 	ctx.Next()
+
+	latency := time.Now().Sub(start)
 
 	// Log only when path is not being skipped
 	if _, ok := log.SkipPaths[path]; !ok {
@@ -125,6 +130,8 @@ func (log *GinLogger) HandleRequest(ctx *gin.Context) {
 				Msgf("Error occurred while handling request %s %s", ctx.Request.Method, path)
 		}
 
-		log.Log.Info().Msgf("%s %s %d %s", ctx.Request.Method, path, ctx.Writer.Status(), respSize)
+		log.Log.Info().Msgf(
+			"%s %s %d %s %s", ctx.Request.Method, path, ctx.Writer.Status(),
+			respSize, latency.String())
 	}
 }
