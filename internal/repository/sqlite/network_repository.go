@@ -69,19 +69,11 @@ func (repo *NetworkRepository) Update(ctx context.Context, network network.Netwo
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx,
-		`DELETE FROM nodes;
-		 DELETE FROM peer_links;`)
-	if err != nil {
-		return rollback(fmt.Errorf("failed to clean database: %w", err))
-	}
-
 	for _, node := range network.Nodes {
 		nodeDbo := mapAggregateToNode(node)
 
-		// TODO: update or put
 		_, err = tx.ExecContext(ctx,
-			`INSERT INTO nodes (public_key, coordinates, additional_info)
+			`INSERT OR REPLACE INTO nodes (public_key, coordinates, additional_info)
 			VALUES ($1, $2, $3);`,
 			nodeDbo.PublicKey, nodeDbo.Coordinates, nodeDbo.AdditionalInfo,
 		)
@@ -90,7 +82,25 @@ func (repo *NetworkRepository) Update(ctx context.Context, network network.Netwo
 		}
 	}
 
-	// TODO: update links
+	_, err = tx.ExecContext(ctx, `DELETE FROM peer_links;`)
+	if err != nil {
+		return rollback(fmt.Errorf("failed to clean links table: %w", err))
+	}
+
+	for _, link := range network.Links {
+		linkDbo := nodesLinkDbo{
+			Key1: []byte(link.From),
+			Key2: []byte(link.To),
+		}
+
+		_, err = tx.ExecContext(ctx,
+			`INSERT INTO peer_links (key1, key2) VALUES ($1, $2);`,
+			linkDbo.Key1, linkDbo.Key2,
+		)
+		if err != nil {
+			return rollback(fmt.Errorf("failed insert nodes link: %w", err))
+		}
+	}
 
 	return tx.Commit()
 }
