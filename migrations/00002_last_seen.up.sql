@@ -1,0 +1,1 @@
+ALTER TABLE nodes ADD last_seen INTEGER;
