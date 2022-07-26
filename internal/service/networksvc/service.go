@@ -2,6 +2,7 @@ package networksvc
 
 import (
 	"context"
+
 	"github.com/exepirit/yggmap/internal/domain/network"
 )
 
@@ -10,13 +11,13 @@ func NewService(networkRepo network.INetworkRepository) IService {
 }
 
 type IService interface {
-	GetNetwork(ctx context.Context) (*network.Network, error)
+	GetNetwork(ctx context.Context) (network.Network, error)
 }
 
 type service struct {
 	networkRepo network.INetworkRepository
 }
 
-func (svc *service) GetNetwork(ctx context.Context) (*network.Network, error) {
-	return svc.networkRepo.Get(ctx)
+func (svc *service) GetNetwork(ctx context.Context) (network.Network, error) {
+	return svc.networkRepo.GetCurrent(ctx)
 }

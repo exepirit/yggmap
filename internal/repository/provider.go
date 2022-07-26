@@ -15,3 +15,7 @@ var Module = fx.Options(
 func NewNodeRepository(database infrastructure.Database) network.INodeRepository {
 	return sqlite.NewNodeRepository(database.SQL)
 }
+
+func NewNetworkRepository(database infrastructure.Database) network.INetworkRepository {
+	return sqlite.NewNetworkRepository(database.SQL)
+}

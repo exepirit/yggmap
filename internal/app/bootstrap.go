@@ -7,7 +7,6 @@ import (
 
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"github.com/exepirit/yggmap/internal/repository"
-	"github.com/exepirit/yggmap/internal/service/graphsvc"
 	"github.com/exepirit/yggmap/internal/service/networksvc"
 	"github.com/exepirit/yggmap/pkg/server"
 	"github.com/rs/zerolog"
@@ -20,7 +19,6 @@ var Module = fx.Options(
 	infrastructure.Module,
 	repository.Module,
 	networksvc.Module,
-	graphsvc.Module,
 	fx.Provide(NewRoutes),
 	fx.Invoke(bootstrap),
 )

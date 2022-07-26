@@ -1,9 +1,10 @@
 package networksvc
 
 import (
+	"net/http"
+
 	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func NewEndpoints(srv IService) *Endpoints {
@@ -27,11 +28,10 @@ func (e *Endpoints) GetNetwork(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, mapNetworkToDto(net))
 }
 
-func mapNetworkToDto(src *network.Network) NetworkDto {
-	edges := src.GetEdges()
+func mapNetworkToDto(src network.Network) NetworkDto {
 	dto := NetworkDto{
 		Nodes: make([]NodeDto, len(src.Nodes)),
-		Edges: make([]EdgeDto, len(edges)),
+		Edges: make([]EdgeDto, len(src.Links)),
 	}
 	for i, node := range src.Nodes {
 		dto.Nodes[i] = NodeDto{
@@ -39,10 +39,10 @@ func mapNetworkToDto(src *network.Network) NetworkDto {
 			AdditionalInfo: node.AdditionalInfo,
 		}
 	}
-	for i, edge := range edges {
+	for i, link := range src.Links {
 		dto.Edges[i] = EdgeDto{
-			From: edge.From.String(),
-			To:   edge.To.String(),
+			From: link.From.String(),
+			To:   link.To.String(),
 		}
 	}
 	return dto

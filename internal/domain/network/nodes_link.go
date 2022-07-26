@@ -1,5 +1,5 @@
 package network
 
-type Edge struct {
+type NodesLink struct {
 	From, To PublicKey
 }

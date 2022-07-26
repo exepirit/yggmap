@@ -28,8 +28,7 @@ func main() {
 		log.Fatal().Err(err).Msgf("Failed to connect to database")
 	}
 
-	nodeRepo := repository.NewNodeRepository(database)
-	netRepo := repository.NewNetworkRepository(nodeRepo)
+	netRepo := repository.NewNetworkRepository(database)
 
 	client := adminapi.Bind("unix:///var/run/yggdrasil.sock")
 	crawler := crawl.NetworkCrawler{Client: client}

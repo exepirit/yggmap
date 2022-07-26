@@ -3,6 +3,7 @@ package crawl
 import (
 	"context"
 	"fmt"
+
 	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/exepirit/yggmap/pkg/adminapi"
 	"github.com/rs/zerolog/log"
@@ -14,15 +15,15 @@ type NetworkCrawler struct {
 	oneNode *NodeCrawler
 }
 
-func (crawler *NetworkCrawler) GetNetwork(ctx context.Context) (*network.Network, error) {
-	net := &network.Network{}
+func (crawler *NetworkCrawler) GetNetwork(ctx context.Context) (network.Network, error) {
+	net := network.Network{}
 
 	root, err := crawler.node().GetRoot()
 	if err != nil {
-		return nil, fmt.Errorf("cannot crawl root node: %w", err)
+		return net, fmt.Errorf("cannot crawl root node: %w", err)
 	}
 
-	err = crawler.crawlRecursive(ctx, net, root)
+	err = crawler.crawlRecursive(ctx, &net, root)
 	return net, err
 }
 
@@ -45,7 +46,7 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 			continue
 		}
 
-		node, err := crawler.crawlOneNode(key)
+		node, peers, err := crawler.crawlOneNode(key)
 		if err != nil {
 			log.Warn().
 				Str("nodeKey", key).Err(err).
@@ -56,7 +57,7 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 		log.Info().Str("nodeKey", key).
 			Msgf("Scraped node %s", node.PublicKey.IPv6Address())
 
-		for _, peer := range node.Peers {
+		for _, peer := range peers {
 			peerKey := peer.String()
 			pending := scrapeQueue.contains(peerKey)
 			_, crawled := scrapedNodes[peerKey]
@@ -68,34 +69,34 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 			}
 		}
 
-		net.AddNode(node)
+		net.AddNode(*node, peers)
 		log.Debug().Msgf("%d nodes in crawl queue, %d scanned", scrapeQueue.length(), len(scrapedNodes))
 	}
 
-	// crawled network may have links to nodes which destroyed during crawling
-	// it must be removed
-	removeGarbageLinks(net)
+	// FIXME: crawled network may have links to nodes which destroyed during
+	// crawling it must be removed
+
 	return nil
 }
 
-func (crawler *NetworkCrawler) crawlOneNode(targetKey string) (*network.Node, error) {
+func (crawler *NetworkCrawler) crawlOneNode(targetKey string) (*network.Node, []network.PublicKey, error) {
 	node, err := crawler.node().GetNode(targetKey)
 	if err != nil {
-		return nil, fmt.Errorf("get info: %w", err)
+		return nil, nil, fmt.Errorf("get info: %w", err)
 	}
 
-	node.Peers, err = crawler.node().GetPeersKeys(network.MustParseKey(targetKey))
+	peers, err := crawler.node().GetPeersKeys(network.MustParseKey(targetKey))
 	if err != nil {
 		log.Warn().
 			Str("nodeKey", targetKey).Err(err).
 			Msg("Cannot get node peers. Part of network might not be scanned")
 	}
-	log.Debug().Msgf("Node %s have %d peers", targetKey, len(node.Peers))
+	log.Debug().Msgf("Node %s have %d peers", targetKey, len(peers))
 
 	// node may have > 1 connection with other node, but it must not be displayed on map
-	node.Peers = crawler.deduplicateKeys(node.Peers)
+	peers = crawler.deduplicateKeys(peers)
 
-	return node, nil
+	return node, peers, nil
 }
 
 func (NetworkCrawler) deduplicateKeys(keys []network.PublicKey) []network.PublicKey {
@@ -114,29 +115,4 @@ func (NetworkCrawler) deduplicateKeys(keys []network.PublicKey) []network.Public
 		i++
 	}
 	return keys
-}
-
-func removeGarbageLinks(net *network.Network) {
-	isInNetwork := func(key network.PublicKey) bool {
-		for _, node := range net.Nodes {
-			if node.PublicKey.Equal(key) {
-				return true
-			}
-		}
-		return false
-	}
-
-	for _, node := range net.Nodes {
-		node.Peers = filterKeys(node.Peers, isInNetwork)
-	}
-}
-
-func filterKeys(keys []network.PublicKey, criteria func(key network.PublicKey) bool) []network.PublicKey {
-	result := make([]network.PublicKey, 0)
-	for _, key := range keys {
-		if criteria(key) {
-			result = append(result, key)
-		}
-	}
-	return result
 }

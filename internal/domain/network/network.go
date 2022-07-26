@@ -1,27 +1,22 @@
 package network
 
 type Network struct {
-	Nodes []*Node
+	Nodes []Node
+	Links []NodesLink
 }
 
-func (net *Network) AddNode(node *Node) {
+func (net *Network) AddNode(node Node, neighbors []PublicKey) {
 	for _, n := range net.Nodes {
 		if n.PublicKey.String() == node.PublicKey.String() {
 			return
 		}
 	}
 	net.Nodes = append(net.Nodes, node)
-}
 
-func (net *Network) GetEdges() []Edge {
-	result := make([]Edge, 0)
-	for _, node := range net.Nodes {
-		for _, peer := range node.Peers {
-			result = append(result, Edge{
-				From: node.PublicKey,
-				To:   peer,
-			})
-		}
+	for _, n := range neighbors {
+		net.Links = append(net.Links, NodesLink{
+			From: node.PublicKey,
+			To:   n,
+		})
 	}
-	return result
 }
