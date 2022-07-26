@@ -73,8 +73,10 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 		log.Debug().Msgf("%d nodes in crawl queue, %d scanned", scrapeQueue.length(), len(scrapedNodes))
 	}
 
-	// FIXME: crawled network may have links to nodes which destroyed during
+	// crawled network may have links to nodes which destroyed during
 	// crawling it must be removed
+	removeDanglingLinks(net)
+	removeOrphanNodes(net)
 
 	return nil
 }
@@ -115,4 +117,40 @@ func (NetworkCrawler) deduplicateKeys(keys []network.PublicKey) []network.Public
 		i++
 	}
 	return keys
+}
+
+func removeDanglingLinks(net *network.Network) {
+	withoutDangling := make([]network.NodesLink, 0, len(net.Links))
+	for _, link := range net.Links {
+		_, srcExists := net.GetNode(link.From)
+		_, dstExists := net.GetNode(link.To)
+		if srcExists && dstExists {
+			withoutDangling = append(withoutDangling, link)
+		} else {
+			log.Debug().Msg("Found dangling link. It removed from network")
+		}
+	}
+	net.Links = withoutDangling
+}
+
+func removeOrphanNodes(net *network.Network) {
+	haveNeighbors := func(node network.Node) bool {
+		addr := node.PublicKey.String()
+		for _, link := range net.Links {
+			if link.From.String() == addr || link.To.String() == addr {
+				return true
+			}
+		}
+		return false
+	}
+
+	withoutOrphans := make([]network.Node, 0, len(net.Nodes))
+	for _, node := range net.Nodes {
+		if haveNeighbors(node) {
+			withoutOrphans = append(withoutOrphans, node)
+		} else {
+			log.Debug().Msgf("Node %s is orphan. It excluded from network", node.PublicKey)
+		}
+	}
+	net.Nodes = withoutOrphans
 }

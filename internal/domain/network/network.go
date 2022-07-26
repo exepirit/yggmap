@@ -20,3 +20,12 @@ func (net *Network) AddNode(node Node, neighbors []PublicKey) {
 		})
 	}
 }
+
+func (net Network) GetNode(key PublicKey) (Node, bool) {
+	for _, n := range net.Nodes {
+		if n.PublicKey.String() == n.PublicKey.String() {
+			return n, true
+		}
+	}
+	return Node{}, false
+}
