@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/exepirit/yggmap/internal/domain/network"
 )
@@ -13,6 +14,7 @@ type nodeDbo struct {
 	PublicKey      []byte `db:"public_key"`
 	Coordinates    string `db:"coordinates"`
 	AdditionalInfo []byte `db:"additional_info"`
+	LastSeen       int    `db:"last_seen"`
 }
 
 func mapNodeToAggregate(nodeDbo nodeDbo) (network.Node, error) {
@@ -34,6 +36,8 @@ func mapNodeToAggregate(nodeDbo nodeDbo) (network.Node, error) {
 		}
 	}
 
+	node.LastSeen = time.Unix(int64(nodeDbo.LastSeen), 0)
+
 	return node, nil
 }
 
@@ -47,6 +51,7 @@ func mapAggregateToNode(node network.Node) nodeDbo {
 		}
 	}
 	nodeDbo.AdditionalInfo, _ = json.Marshal(node.AdditionalInfo)
+	nodeDbo.LastSeen = int(node.LastSeen.Unix())
 
 	return nodeDbo
 }

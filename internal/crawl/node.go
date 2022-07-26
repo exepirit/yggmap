@@ -2,10 +2,12 @@ package crawl
 
 import (
 	"fmt"
-	"github.com/exepirit/yggmap/internal/domain/network"
-	"github.com/exepirit/yggmap/pkg/adminapi"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/exepirit/yggmap/internal/domain/network"
+	"github.com/exepirit/yggmap/pkg/adminapi"
 )
 
 type NodeCrawler struct {
@@ -30,6 +32,9 @@ func (crawler NodeCrawler) GetNode(key string) (*network.Node, error) {
 	for k, v := range detailInfo[addr] {
 		info.AdditionalInfo[k] = v
 	}
+
+	info.LastSeen = time.Now()
+
 	return info, nil
 }
 

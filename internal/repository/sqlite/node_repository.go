@@ -52,37 +52,3 @@ func (repo NodeRepository) GetAll(ctx context.Context) ([]network.Node, error) {
 
 	return nodes, nil
 }
-
-func (repo NodeRepository) UpdateAll(ctx context.Context, nodes []network.Node) error {
-	tx, err := repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	rollback := func(err error) error {
-		_ = tx.Rollback()
-		return err
-	}
-
-	_, err = tx.ExecContext(ctx,
-		`DELETE FROM nodes;
-		 DELETE FROM peer_links;`)
-	if err != nil {
-		return rollback(fmt.Errorf("failed to clean database: %w", err))
-	}
-
-	for _, node := range nodes {
-		nodeDbo := mapAggregateToNode(node)
-
-		_, err = tx.ExecContext(ctx,
-			`INSERT INTO nodes (public_key, coordinates, additional_info)
-			VALUES ($1, $2, $3);`,
-			nodeDbo.PublicKey, nodeDbo.Coordinates, nodeDbo.AdditionalInfo,
-		)
-		if err != nil {
-			return rollback(fmt.Errorf("failed insert node: %w", err))
-		}
-	}
-
-	return tx.Commit()
-}

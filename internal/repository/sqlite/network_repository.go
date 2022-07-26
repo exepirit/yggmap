@@ -73,9 +73,9 @@ func (repo *NetworkRepository) Update(ctx context.Context, network network.Netwo
 		nodeDbo := mapAggregateToNode(node)
 
 		_, err = tx.ExecContext(ctx,
-			`INSERT OR REPLACE INTO nodes (public_key, coordinates, additional_info)
-			VALUES ($1, $2, $3);`,
-			nodeDbo.PublicKey, nodeDbo.Coordinates, nodeDbo.AdditionalInfo,
+			`INSERT OR REPLACE INTO nodes (public_key, coordinates, additional_info, last_seen)
+			VALUES ($1, $2, $3, $4);`,
+			nodeDbo.PublicKey, nodeDbo.Coordinates, nodeDbo.AdditionalInfo, nodeDbo.LastSeen,
 		)
 		if err != nil {
 			return rollback(fmt.Errorf("failed insert node: %w", err))
