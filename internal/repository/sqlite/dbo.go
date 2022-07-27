@@ -49,6 +49,7 @@ func mapAggregateToNode(node network.Node) nodeDbo {
 	nodeDbo.PublicKey = node.PublicKey
 	nodeDbo.AdditionalInfo, _ = json.Marshal(node.AdditionalInfo)
 	nodeDbo.LastSeen = node.LastSeen
+	nodeDbo.LastSeen = node.LastSeen.UTC().Truncate(time.Second)
 	nodeDbo.IsActive = node.IsActive
 
 	for i, c := range node.Coordinates {
