@@ -1,4 +1,4 @@
-package crawl
+package main
 
 import (
 	"fmt"
@@ -15,11 +15,16 @@ type NodeCrawler struct {
 }
 
 func (crawler NodeCrawler) GetNode(key string) (*network.Node, error) {
-	info := &network.Node{}
+	info := &network.Node{
+		LastSeen: time.Now(),
+		IsActive: true,
+	}
+
 	selfInfo, err := crawler.Client.RemoteGetSelf(key)
 	if err != nil {
 		return info, fmt.Errorf("get basic node info: %w", err)
 	}
+
 	addr := network.MustParseKey(key).IPv6Address()
 	info.PublicKey = network.MustParseKey(selfInfo[addr].PublicKey)
 	info.Coordinates = parseCoordinatesFromStr(selfInfo[addr].Coordinates)
@@ -32,9 +37,6 @@ func (crawler NodeCrawler) GetNode(key string) (*network.Node, error) {
 	for k, v := range detailInfo[addr] {
 		info.AdditionalInfo[k] = v
 	}
-
-	info.LastSeen = time.Now()
-	info.IsActive = true
 
 	return info, nil
 }

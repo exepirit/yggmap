@@ -1,4 +1,4 @@
-package crawl
+package main
 
 func newQueue() queue {
 	return queue{el: make([]string, 0)}

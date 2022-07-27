@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/exepirit/yggmap/internal/crawl"
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"github.com/exepirit/yggmap/internal/repository"
 	"github.com/exepirit/yggmap/pkg/adminapi"
@@ -31,7 +30,7 @@ func main() {
 	netRepo := repository.NewNetworkRepository(database)
 
 	client := adminapi.Bind("unix:///var/run/yggdrasil.sock")
-	crawler := crawl.NetworkCrawler{Client: client}
+	crawler := NetworkCrawler{Client: client}
 
 	net, err := crawler.GetNetwork(context.Background())
 	if err != nil {
