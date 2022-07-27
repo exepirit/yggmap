@@ -20,3 +20,19 @@ func (r route) Bind(router gin.IRouter) {
 		subRoute.Bind(router)
 	}
 }
+
+func Union(bind ...Bindable) Bindable {
+	return &union{
+		sub: bind,
+	}
+}
+
+type union struct {
+	sub []Bindable
+}
+
+func (u union) Bind(router gin.IRouter) {
+	for _, subRoute := range u.sub {
+		subRoute.Bind(router)
+	}
+}

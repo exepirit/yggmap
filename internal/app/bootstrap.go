@@ -5,10 +5,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/exepirit/yggmap/internal/api"
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"github.com/exepirit/yggmap/internal/repository"
 	"github.com/exepirit/yggmap/internal/service/networksvc"
-	"github.com/exepirit/yggmap/pkg/server"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/fx"
@@ -19,14 +19,14 @@ var Module = fx.Options(
 	infrastructure.Module,
 	repository.Module,
 	networksvc.Module,
-	fx.Provide(NewRoutes),
+	api.Module,
 	fx.Invoke(bootstrap),
 )
 
 func bootstrap(
 	lifecycle fx.Lifecycle,
 	server infrastructure.Server,
-	routes server.Bindable,
+	api api.API,
 ) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{
 		Out:        os.Stderr,
@@ -36,7 +36,7 @@ func bootstrap(
 	lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
-				routes.Bind(server.Gin)
+				api.Bind(server.Gin)
 				_ = server.Gin.Run(":8000")
 			}()
 			return nil

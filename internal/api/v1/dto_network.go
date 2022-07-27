@@ -1,13 +1,8 @@
-package networksvc
+package v1
 
 type NetworkDto struct {
 	Nodes []NodeDto `json:"nodes"`
 	Edges []EdgeDto `json:"edges"`
-}
-
-type NodeDto struct {
-	PublicKey      string                 `json:"publicKey"`
-	AdditionalInfo map[string]interface{} `json:"additionalInfo"`
 }
 
 type EdgeDto struct {

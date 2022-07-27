@@ -1,25 +1,26 @@
-package networksvc
+package v1
 
 import (
 	"net/http"
 
 	"github.com/exepirit/yggmap/internal/domain/network"
+	"github.com/exepirit/yggmap/internal/service/networksvc"
 	"github.com/gin-gonic/gin"
 )
 
-func NewEndpoints(srv IService) *Endpoints {
-	return &Endpoints{Service: srv}
+func NewNetworkEndpoints(srv networksvc.IService) *NetworkEndpoints {
+	return &NetworkEndpoints{Service: srv}
 }
 
-type Endpoints struct {
-	Service IService
+type NetworkEndpoints struct {
+	Service networksvc.IService
 }
 
-func (e *Endpoints) Bind(router gin.IRouter) {
-	router.GET("", e.GetNetwork)
+func (e *NetworkEndpoints) Bind(router gin.IRouter) {
+	router.GET("", e.Get)
 }
 
-func (e *Endpoints) GetNetwork(ctx *gin.Context) {
+func (e *NetworkEndpoints) Get(ctx *gin.Context) {
 	net, err := e.Service.GetNetwork(ctx)
 	if err != nil {
 		_ = ctx.AbortWithError(http.StatusInternalServerError, err)
