@@ -1,1 +1,2 @@
-ALTER TABLE nodes ADD last_seen INTEGER;
+ALTER TABLE nodes ADD last_seen TIMESTAMP;
+UPDATE nodes SET last_seen = CURRENT_TIMESTAMP;
