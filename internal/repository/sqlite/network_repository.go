@@ -69,13 +69,19 @@ func (repo *NetworkRepository) Update(ctx context.Context, network network.Netwo
 		return err
 	}
 
+	// set active flag on all nodes to false
+	_, err = tx.ExecContext(ctx, `UPDATE nodes SET is_active = 0;`)
+	if err != nil {
+		return rollback(fmt.Errorf("failed reset active flag for nodes: %w", err))
+	}
+
 	for _, node := range network.Nodes {
 		nodeDbo := mapAggregateToNode(node)
 
 		_, err = tx.ExecContext(ctx,
-			`INSERT OR REPLACE INTO nodes (public_key, coordinates, additional_info, last_seen)
-			VALUES ($1, $2, $3, $4);`,
-			nodeDbo.PublicKey, nodeDbo.Coordinates, nodeDbo.AdditionalInfo, nodeDbo.LastSeen,
+			`INSERT OR REPLACE INTO nodes (public_key, coordinates, additional_info, last_seen, is_active)
+			VALUES ($1, $2, $3, $4, $5);`,
+			nodeDbo.PublicKey, nodeDbo.Coordinates, nodeDbo.AdditionalInfo, nodeDbo.LastSeen, nodeDbo.IsActive,
 		)
 		if err != nil {
 			return rollback(fmt.Errorf("failed insert node: %w", err))

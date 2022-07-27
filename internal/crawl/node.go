@@ -34,6 +34,7 @@ func (crawler NodeCrawler) GetNode(key string) (*network.Node, error) {
 	}
 
 	info.LastSeen = time.Now()
+	info.IsActive = true
 
 	return info, nil
 }

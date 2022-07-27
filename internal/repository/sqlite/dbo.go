@@ -11,10 +11,11 @@ import (
 )
 
 type nodeDbo struct {
-	PublicKey      []byte `db:"public_key"`
-	Coordinates    string `db:"coordinates"`
-	AdditionalInfo []byte `db:"additional_info"`
-	LastSeen       int    `db:"last_seen"`
+	PublicKey      []byte    `db:"public_key"`
+	Coordinates    string    `db:"coordinates"`
+	AdditionalInfo []byte    `db:"additional_info"`
+	LastSeen       time.Time `db:"last_seen"`
+	IsActive       bool      `db:"is_active"`
 }
 
 func mapNodeToAggregate(nodeDbo nodeDbo) (network.Node, error) {
@@ -36,22 +37,26 @@ func mapNodeToAggregate(nodeDbo nodeDbo) (network.Node, error) {
 		}
 	}
 
-	node.LastSeen = time.Unix(int64(nodeDbo.LastSeen), 0)
+	node.LastSeen = nodeDbo.LastSeen
+	node.IsActive = nodeDbo.IsActive
 
 	return node, nil
 }
 
 func mapAggregateToNode(node network.Node) nodeDbo {
 	var nodeDbo nodeDbo
+
 	nodeDbo.PublicKey = node.PublicKey
+	nodeDbo.AdditionalInfo, _ = json.Marshal(node.AdditionalInfo)
+	nodeDbo.LastSeen = node.LastSeen
+	nodeDbo.IsActive = node.IsActive
+
 	for i, c := range node.Coordinates {
 		nodeDbo.Coordinates += strconv.Itoa(c)
 		if i < len(node.Coordinates)-1 {
 			nodeDbo.Coordinates += ","
 		}
 	}
-	nodeDbo.AdditionalInfo, _ = json.Marshal(node.AdditionalInfo)
-	nodeDbo.LastSeen = int(node.LastSeen.Unix())
 
 	return nodeDbo
 }
