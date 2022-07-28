@@ -11,3 +11,7 @@ type INetworkRepository interface {
 	GetCurrent(ctx context.Context) (Network, error)
 	Update(ctx context.Context, network Network) error
 }
+
+type INetworkService interface {
+	GetNetwork(ctx context.Context) (Network, error)
+}

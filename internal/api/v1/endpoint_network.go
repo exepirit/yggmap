@@ -4,16 +4,15 @@ import (
 	"net/http"
 
 	"github.com/exepirit/yggmap/internal/domain/network"
-	"github.com/exepirit/yggmap/internal/service/networksvc"
 	"github.com/gin-gonic/gin"
 )
 
-func NewNetworkEndpoints(srv networksvc.IService) *NetworkEndpoints {
+func NewNetworkEndpoints(srv network.INetworkService) *NetworkEndpoints {
 	return &NetworkEndpoints{Service: srv}
 }
 
 type NetworkEndpoints struct {
-	Service networksvc.IService
+	Service network.INetworkService
 }
 
 func (e *NetworkEndpoints) Bind(router gin.IRouter) {

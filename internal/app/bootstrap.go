@@ -8,7 +8,7 @@ import (
 	"github.com/exepirit/yggmap/internal/api"
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"github.com/exepirit/yggmap/internal/repository"
-	"github.com/exepirit/yggmap/internal/service/networksvc"
+	"github.com/exepirit/yggmap/internal/service"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/fx"
@@ -18,7 +18,7 @@ var Module = fx.Options(
 	fx.Provide(LoadDbConfig),
 	infrastructure.Module,
 	repository.Module,
-	networksvc.Module,
+	service.Module,
 	api.Module,
 	fx.Invoke(bootstrap),
 )
