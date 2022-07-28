@@ -15,3 +15,7 @@ type INetworkRepository interface {
 type INetworkService interface {
 	GetNetwork(ctx context.Context) (Network, error)
 }
+
+type INodeService interface {
+	GetActive(ctx context.Context) ([]Node, error)
+}

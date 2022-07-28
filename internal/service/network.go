@@ -6,7 +6,7 @@ import (
 	"github.com/exepirit/yggmap/internal/domain/network"
 )
 
-func NewService(networkRepo network.INetworkRepository) network.INetworkService {
+func NewNetworkService(networkRepo network.INetworkRepository) network.INetworkService {
 	return &service{networkRepo: networkRepo}
 }
 

@@ -7,13 +7,18 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(NewNetworkEndpoints),
+	fx.Provide(NewNodeEndpoints),
 	fx.Provide(NewAPI),
 )
 
 type API server.Bindable
 
-func NewAPI(network *NetworkEndpoints) API {
+func NewAPI(
+	network *NetworkEndpoints,
+	node *NodeEndpoints,
+) API {
 	return server.Union(
 		server.Route("/network", network),
+		server.Route("/node", node),
 	)
 }
