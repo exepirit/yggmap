@@ -19,6 +19,11 @@ var Endpoints = []Endpoint{
 		Method:  http.MethodGet,
 		Handler: GetStaticNetworkMap,
 	},
+	{
+		Route:   "/api/v1/node/active",
+		Method:  http.MethodGet,
+		Handler: GetActiveNodes,
+	},
 }
 
 // GetStaticNetwork function purpose is provide static network map for testing.
@@ -61,4 +66,27 @@ func GetStaticNetworkMap(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, network)
+}
+
+func GetActiveNodes(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, []v1.NodeDto{
+		{
+			PublicKey: "baa97089f3973fe68c5b7249f45ebde91aa266f4f22682b6b2840677ae654938",
+			AdditionalInfo: map[string]interface{}{
+				"os": "linux",
+			},
+		},
+		{
+			PublicKey: "ee88dd4a5c1a7261ba4492690b701ccbb6a86452d40b19352d250082bcf58f86",
+			AdditionalInfo: map[string]interface{}{
+				"os": "windows",
+			},
+		},
+		{
+			PublicKey: "c9d88e46341c357111a0ef8b216c1d3bf8d363a63b20e7f7f851ecc960c7408b",
+			AdditionalInfo: map[string]interface{}{
+				"os": "android",
+			},
+		},
+	})
 }
