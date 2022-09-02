@@ -22,11 +22,15 @@ func (crawler NodeCrawler) GetNode(key string) (*network.Node, error) {
 
 	selfInfo, err := crawler.Client.RemoteGetSelf(key)
 	if err != nil {
-		return info, fmt.Errorf("get basic node info: %w", err)
+		return nil, fmt.Errorf("get basic node info: %w", err)
 	}
 
 	addr := network.MustParseKey(key).IPv6Address()
-	info.PublicKey = network.MustParseKey(selfInfo[addr].PublicKey)
+	info.PublicKey, err = network.ParseKey(selfInfo[addr].PublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("parse node public key: %w", err)
+	}
+
 	info.Coordinates = parseCoordinatesFromStr(selfInfo[addr].Coordinates)
 	info.AdditionalInfo = make(map[string]interface{})
 
