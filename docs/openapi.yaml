@@ -14,6 +14,17 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Node"
+  /api/v1/nodes/active:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Node"
   /api/v1/network/current:
     get:
       responses:
