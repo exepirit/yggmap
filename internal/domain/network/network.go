@@ -23,7 +23,7 @@ func (net *Network) AddNode(node Node, neighbors []PublicKey) {
 
 func (net Network) GetNode(key PublicKey) (Node, bool) {
 	for _, n := range net.Nodes {
-		if n.PublicKey.String() == n.PublicKey.String() {
+		if n.PublicKey.String() == key.String() {
 			return n, true
 		}
 	}
