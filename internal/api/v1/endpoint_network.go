@@ -17,6 +17,7 @@ type NetworkEndpoints struct {
 
 func (e *NetworkEndpoints) Bind(router gin.IRouter) {
 	router.GET("", e.Get)
+	router.GET("/spanningTree", e.GetSpanningTree)
 }
 
 func (e *NetworkEndpoints) Get(ctx *gin.Context) {
@@ -26,6 +27,15 @@ func (e *NetworkEndpoints) Get(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, mapNetworkToDto(net))
+}
+
+func (e *NetworkEndpoints) GetSpanningTree(ctx *gin.Context) {
+	tree, err := e.Service.GetSpanningTree(ctx)
+	if err != nil {
+		_ = ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, mapNetworkToDto(tree))
 }
 
 func mapNetworkToDto(src network.Network) NetworkDto {

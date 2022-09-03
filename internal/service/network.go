@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/exepirit/yggmap/internal/factory"
 
 	"github.com/exepirit/yggmap/internal/domain/network"
 )
@@ -16,4 +17,13 @@ type service struct {
 
 func (svc *service) GetNetwork(ctx context.Context) (network.Network, error) {
 	return svc.networkRepo.GetCurrent(ctx)
+}
+
+func (svc *service) GetSpanningTree(ctx context.Context) (network.Network, error) {
+	net, err := svc.GetNetwork(ctx)
+	if err != nil {
+		return network.Network{}, err
+	}
+
+	return factory.MakeSpanningTree(net.Nodes), nil
 }

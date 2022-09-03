@@ -12,8 +12,13 @@ type INetworkRepository interface {
 	Update(ctx context.Context, network Network) error
 }
 
+type ISpanningTreeRepository interface {
+	INetworkRepository
+}
+
 type INetworkService interface {
 	GetNetwork(ctx context.Context) (Network, error)
+	GetSpanningTree(ctx context.Context) (Network, error)
 }
 
 type INodeService interface {
