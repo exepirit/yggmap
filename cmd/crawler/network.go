@@ -36,7 +36,7 @@ func (crawler *NetworkCrawler) node() *NodeCrawler {
 
 // TODO: use context to cancel crawling process
 func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Network, root *network.Node) error {
-	scrapedNodes := make(map[string]*network.Node)
+	scrapedNodes := make(map[string]struct{})
 	scrapeQueue := newQueue()
 	scrapeQueue.push(root.PublicKey.String())
 
@@ -53,7 +53,7 @@ func (crawler *NetworkCrawler) crawlRecursive(_ context.Context, net *network.Ne
 				Msg("Cannot collect node")
 			continue
 		}
-		scrapedNodes[key] = node
+		scrapedNodes[key] = struct{}{}
 		log.Info().Str("nodeKey", key).
 			Msgf("Scraped node %s", node.PublicKey.IPv6Address())
 
