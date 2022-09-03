@@ -17,6 +17,7 @@ func main() {
 	dbType := flag.String("dbType", "sqlite3", "database type")
 	dbConnectionString := flag.String("dbConnStr", "yggdrasil_network.db", "database connection url")
 	yggdrasilSock := flag.String("socket", "unix:///var/run/yggdrasil.sock", "Yggdrasil API socket")
+	flag.Parse()
 
 	log.Logger = log.Output(zerolog.ConsoleWriter{
 		Out:        os.Stderr,
