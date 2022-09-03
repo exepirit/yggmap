@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"os"
 	"time"
 
@@ -13,14 +14,18 @@ import (
 )
 
 func main() {
+	dbType := flag.String("dbType", "sqlite3", "database type")
+	dbConnectionString := flag.String("dbConnStr", "yggdrasil_network.db", "database connection url")
+	yggdrasilSock := flag.String("socket", "unix:///var/run/yggdrasil.sock", "Yggdrasil API socket")
+
 	log.Logger = log.Output(zerolog.ConsoleWriter{
 		Out:        os.Stderr,
 		TimeFormat: time.RFC822,
 	})
 
 	dbConf := infrastructure.DatabaseConfig{
-		Type:             os.Getenv("DB_TYPE"),
-		ConnectionString: os.Getenv("DB_CONNECTIONSTRING"),
+		Type:             *dbType,
+		ConnectionString: *dbConnectionString,
 	}
 	database, err := infrastructure.NewDatabase(dbConf)
 	if err != nil {
@@ -29,7 +34,7 @@ func main() {
 
 	netRepo := repository.NewNetworkRepository(database)
 
-	client := adminapi.Bind("unix:///var/run/yggdrasil.sock")
+	client := adminapi.Bind(*yggdrasilSock)
 	crawler := NetworkCrawler{Client: client}
 
 	net, err := crawler.GetNetwork(context.Background())
