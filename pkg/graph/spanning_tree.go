@@ -1,6 +1,9 @@
 package graph
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 func MakeSpanningTree[T any](rootNodeData T, nodesData []T, getCoords func(T) []int) Tree[T] {
 	root := &TreeNode[T]{
@@ -26,6 +29,7 @@ func MakeSpanningTree[T any](rootNodeData T, nodesData []T, getCoords func(T) []
 }
 
 func addSTNode[T any](root *TreeNode[T], coords []int, node *TreeNode[T]) {
+	fmt.Println(coords)
 	n := root
 	c := coords[0]
 	for len(coords) > 0 {
@@ -35,7 +39,9 @@ func addSTNode[T any](root *TreeNode[T], coords []int, node *TreeNode[T]) {
 		}
 		coords = coords[1:]
 		if len(coords) > 0 {
-			n = n.Children[c]
+			if n.Children[c] != nil {
+				n = n.Children[c]
+			}
 		}
 	}
 	n.Children[c] = node
