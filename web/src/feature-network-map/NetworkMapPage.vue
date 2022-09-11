@@ -22,7 +22,7 @@ export default {
   },
   mounted() {
     axios
-      .get("/api/v1/network")
+      .get("/api/v1/network/spanningTree")
       .then(response => {
         this.network = response.data;
       });
