@@ -21,7 +21,7 @@ type NetworkRepository struct {
 func (repo *NetworkRepository) GetCurrent(ctx context.Context) (network.Network, error) {
 	net := network.Network{}
 
-	nodesDbo := []nodeDbo{}
+	var nodesDbo []nodeDbo
 	err := repo.db.SelectContext(
 		ctx, &nodesDbo,
 		`SELECT * FROM nodes;`)
@@ -38,7 +38,7 @@ func (repo *NetworkRepository) GetCurrent(ctx context.Context) (network.Network,
 		}
 	}
 
-	linksDbo := []nodesLinkDbo{}
+	var linksDbo []nodesLinkDbo
 	err = repo.db.SelectContext(
 		ctx, &linksDbo,
 		`SELECT * FROM peer_links;`,
@@ -50,8 +50,8 @@ func (repo *NetworkRepository) GetCurrent(ctx context.Context) (network.Network,
 	net.Links = make([]network.NodesLink, len(linksDbo))
 	for i, link := range linksDbo {
 		net.Links[i] = network.NodesLink{
-			From: []byte(link.Key1),
-			To:   []byte(link.Key2),
+			From: link.Key1,
+			To:   link.Key2,
 		}
 	}
 
@@ -70,7 +70,7 @@ func (repo *NetworkRepository) Update(ctx context.Context, network network.Netwo
 	}
 
 	// set active flag on all nodes to false
-	_, err = tx.ExecContext(ctx, `UPDATE nodes SET is_active = 0;`)
+	_, err = tx.ExecContext(ctx, `UPDATE nodes SET is_active = 0, coordinates = '';`)
 	if err != nil {
 		return rollback(fmt.Errorf("failed reset active flag for nodes: %w", err))
 	}
