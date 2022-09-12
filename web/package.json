@@ -2,7 +2,6 @@
   "name": "yggmap",
   "version": "0.1.0",
   "scripts": {
-    "serve": "node build.mjs s",
     "start": "webpack serve --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js"
   },
@@ -13,8 +12,6 @@
     "@babel/preset-react": "^7.18.6",
     "babel-loader": "^8.2.5",
     "babel-preset-react": "^6.24.1",
-    "esbuild": "^0.15.7",
-    "esbuild-plugin-alias": "^0.2.1",
     "html-webpack-plugin": "^5.5.0",
     "preact": "^10.10.6",
     "webpack": "^5.74.0"
