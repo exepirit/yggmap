@@ -13,26 +13,5 @@ module.exports = merge(common, {
 		hot: true,
 		compress: false
 	},
-	plugins: [new webpack.HotModuleReplacementPlugin()],
-	module: {
-		rules: [
-			{
-				test: /\.jsx?$/,
-				loader: "babel-loader",
-				exclude: /node_modules/,
-
-				options: {
-					presets: [
-            "@babel/preset-env",
-					],
-					plugins: [
-						["@babel/plugin-transform-react-jsx", {
-              "pragma": "h",
-              "pragmaFrag": "Fragment",
-            }]
-					]
-				}
-			},
-		]
-	}
+	plugins: [new webpack.HotModuleReplacementPlugin()]
 })

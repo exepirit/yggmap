@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
   entry: './src/app.js',
@@ -19,6 +20,37 @@ module.exports = {
 				collapseWhitespace: true,
 				removeComments: true
 			}
-		})
-  ]
+		}),
+		new MiniCssExtractPlugin()
+  ],
+	module: {
+		rules: [
+			{
+				test: /\.jsx?$/,
+				loader: "babel-loader",
+				exclude: /node_modules/,
+
+				options: {
+					presets: [
+            "@babel/preset-env",
+					],
+					plugins: [
+						["@babel/plugin-transform-react-jsx", {
+              "pragma": "h",
+              "pragmaFrag": "Fragment",
+            }]
+					]
+				}
+			},
+			{
+        test: /\.css$/,
+        use: [
+					{
+						loader: MiniCssExtractPlugin.loader
+					},
+					'css-loader',
+				]
+      }
+		]
+	}
 }
