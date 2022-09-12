@@ -11,7 +11,11 @@ module.exports = merge(common, {
 	devtool: "inline-source-map",
 	devServer: {
 		hot: true,
-		compress: false
+		compress: false,
+		port: 3000,
+		proxy: {
+			'/api': 'http://localhost:8000'
+		}
 	},
 	plugins: [new webpack.HotModuleReplacementPlugin()]
 })
