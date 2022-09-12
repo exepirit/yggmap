@@ -1,0 +1,12 @@
+{
+  "name": "yggmap",
+  "version": "0.1.0",
+  "scripts": {
+    "serve": "node build.mjs s"
+  },
+  "dependencies": {
+    "esbuild": "^0.15.7",
+    "esbuild-plugin-alias": "^0.2.1",
+    "preact": "^10.10.6"
+  }
+}
