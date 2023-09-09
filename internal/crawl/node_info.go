@@ -1,4 +1,4 @@
-package main
+package crawl
 
 import (
 	"fmt"
@@ -14,31 +14,36 @@ type NodeCrawler struct {
 	Client *adminapi.Client
 }
 
-func (crawler NodeCrawler) GetNode(key string) (*network.Node, error) {
+func (crawler NodeCrawler) GetNode(key network.PublicKey) (*network.Node, error) {
 	info := &network.Node{
 		LastSeen: time.Now(),
 		IsActive: true,
 	}
 
-	selfInfo, err := crawler.Client.RemoteGetSelf(key)
+	getSelfResponse, err := crawler.Client.RemoteGetSelf(key.String())
 	if err != nil {
 		return nil, fmt.Errorf("get basic node info: %w", err)
 	}
 
-	addr := network.MustParseKey(key).IPv6Address()
-	info.PublicKey, err = network.ParseKey(selfInfo[addr].PublicKey)
-	if err != nil {
-		return nil, fmt.Errorf("parse node public key: %w", err)
+	selfAddress := key.IPv6Address()
+	selfInfo, ok := getSelfResponse[selfAddress]
+	if !ok {
+		return nil, fmt.Errorf("response doesn't contain node itself info")
 	}
 
-	info.Coordinates = parseCoordinatesFromStr(selfInfo[addr].Coordinates)
+	info.PublicKey, err = network.ParseKey(selfInfo.PublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("invalid node public key: %w", err)
+	}
+
+	info.Coordinates = parseCoordinatesFromStr(selfInfo.Coordinates)
 	info.AdditionalInfo = make(map[string]interface{})
 
-	detailInfo, err := crawler.Client.GetNodeInfo(key)
+	detailInfo, err := crawler.Client.GetNodeInfo(key.String())
 	if err != nil {
 		return info, fmt.Errorf("get detail node info: %w", err)
 	}
-	for k, v := range detailInfo[addr] {
+	for k, v := range detailInfo[selfAddress] {
 		info.AdditionalInfo[k] = v
 	}
 
@@ -57,14 +62,6 @@ func (crawler NodeCrawler) GetPeersKeys(targetKey network.PublicKey) ([]network.
 		keys[i] = network.MustParseKey(k)
 	}
 	return keys, nil
-}
-
-func (crawler NodeCrawler) GetRoot() (*network.Node, error) {
-	selfInfo, err := crawler.Client.GetSelf()
-	if err != nil {
-		return nil, err
-	}
-	return crawler.GetNode(selfInfo.PublicKey)
 }
 
 func parseCoordinatesFromStr(s string) []int {
