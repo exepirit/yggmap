@@ -11,8 +11,14 @@ type PgxDriver struct {
 	Connection *pgx.Conn
 }
 
+func (driver PgxDriver) CreateGraph(ctx context.Context, graph string) error {
+	sqlQuery := `SELECT * FROM ag_catalog.create_graph($1);`
+	_, err := driver.Connection.ExecEx(ctx, sqlQuery, &pgx.QueryExOptions{}, graph)
+	return err
+}
+
 func (driver PgxDriver) Exec(ctx context.Context, graph, query string, args ...any) (Result, error) {
-	sqlQuery := buildCypherQuery(graph, query, 0)
+	sqlQuery := buildCypherQuery(graph, query, 1)
 	return driver.Connection.ExecEx(ctx, sqlQuery, &pgx.QueryExOptions{}, args...)
 }
 
@@ -28,11 +34,12 @@ func (driver PgxDriver) QueryOne(ctx context.Context, graph, query string, args 
 	return newUnmarshaller().unmarshal(result)
 }
 
-func (driver PgxDriver) Query(graph, query string, args ...any) AgtypeScanner {
+func (driver PgxDriver) Query(graph, query string, retCount int, args ...any) AgtypeScanner {
 	return &PgxAgtypeScanner{
 		conn:        driver.Connection,
 		graph:       graph,
 		cypherQuery: query,
+		returnCount: retCount,
 		args:        args,
 	}
 }
@@ -64,22 +71,19 @@ func buildCypherQuery(graph, cypherQuery string, retCount int) string {
 type PgxAgtypeScanner struct {
 	conn               *pgx.Conn
 	graph, cypherQuery string
+	returnCount        int
 	args               []any
 	err                error
 	cursor             *pgx.Rows
 }
 
-func (scanner *PgxAgtypeScanner) prepare(ctx context.Context, retCount int) bool {
-	sqlQuery := buildCypherQuery(scanner.graph, scanner.cypherQuery, retCount)
+func (scanner *PgxAgtypeScanner) prepare(ctx context.Context) bool {
+	sqlQuery := buildCypherQuery(scanner.graph, scanner.cypherQuery, scanner.returnCount)
 	scanner.cursor, scanner.err = scanner.conn.QueryEx(ctx, sqlQuery, &pgx.QueryExOptions{}, scanner.args...)
-	return scanner.err != nil
+	return scanner.err == nil && scanner.cursor.Err() == nil
 }
 
 func (scanner *PgxAgtypeScanner) Scan(ctx context.Context, dest ...*Agtype) {
-	if scanner.cursor == nil && !scanner.prepare(ctx, len(dest)) {
-		return
-	}
-
 	retValuesStr := make([]string, len(dest))
 	scanDest := make([]any, len(retValuesStr))
 	for i := 0; i < len(retValuesStr); i++ {
@@ -99,11 +103,12 @@ func (scanner *PgxAgtypeScanner) Scan(ctx context.Context, dest ...*Agtype) {
 	}
 }
 
-func (scanner *PgxAgtypeScanner) Next() bool {
-	if scanner.cursor == nil || scanner.err != nil {
-		return scanner.err != nil
+func (scanner *PgxAgtypeScanner) Next(ctx context.Context) bool {
+	if scanner.cursor == nil && !scanner.prepare(ctx) {
+		return false
 	}
-	return scanner.cursor.Next()
+
+	return scanner.err == nil && scanner.cursor.Next()
 }
 
 func (scanner *PgxAgtypeScanner) Err() error {

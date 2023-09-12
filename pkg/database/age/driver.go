@@ -21,13 +21,15 @@ type Driver interface {
 	QueryOne(ctx context.Context, graph, query string, args ...any) (Agtype, error)
 
 	// Query executes a query on the database, returning a scanner that can be used to iterate over the result set.
-	Query(graph, query string, args ...any) AgtypeScanner
+	//
+	// retCount is a count or returning values. It's a hack, but Apache AGE require defined result tuple length.
+	Query(graph, query string, retCount int, args ...any) AgtypeScanner
 }
 
 type AgtypeScanner interface {
 	// Next advances the scanner to the next row of the result set and returns true if there is another row, or false if
 	// there are no more rows in the result set.
-	Next() bool
+	Next(ctx context.Context) bool
 
 	// Err returns any error that occurred during scanning.
 	Err() error
