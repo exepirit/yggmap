@@ -2,7 +2,6 @@ package adminapi
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"net"
@@ -66,13 +65,8 @@ func (client *Client) GetSelf() (GetSelfResponse, error) {
 		return GetSelfResponse{}, err
 	}
 
-	self := resp.Response["self"].(map[string]interface{})
-	for _, nodeInfo := range self {
-		nodeInfo := nodeInfo.(map[string]interface{})
-		var result GetSelfResponse
-		return result, mapstructure.Decode(nodeInfo, &result)
-	}
-	return GetSelfResponse{}, errors.New("response not contains node info (malformed response?)")
+	var result GetSelfResponse
+	return result, mapstructure.Decode(resp.Response, &result)
 }
 
 func (client *Client) GetPeers() (GetPeersResponse, error) {
