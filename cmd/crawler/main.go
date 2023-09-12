@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/exepirit/yggmap/internal/crawl"
+	"github.com/exepirit/yggmap/internal/domain/network"
 	"os"
 	"time"
 
@@ -32,21 +34,21 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msgf("Failed to connect to database")
 	}
-
 	netRepo := repository.NewNetworkRepository(database)
 
 	client := adminapi.Bind(*yggdrasilSock)
-	crawler := NetworkCrawler{Client: client}
-
-	net, err := crawler.GetNetwork(context.Background())
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to crawl whole network")
+	visitor := RetainingVisitor{
+		logger:     log.Logger,
+		repository: netRepo,
+		network:    &network.Network{},
 	}
 
-	log.Info().Msg("Network successfully crawled!")
-	log.Info().Msgf("Collected %d nodes", len(net.Nodes))
+	err = crawl.WalkNetwork(context.Background(), client, visitor)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Error occurred while network crawling")
+	}
 
-	if err = netRepo.Update(context.Background(), net); err != nil {
-		log.Error().Err(err).Msg("Failed to update network in database")
+	if err = visitor.Save(context.Background()); err != nil {
+		log.Fatal().Err(err).Msg("Cannot save network")
 	}
 }

@@ -6,18 +6,24 @@ import (
 	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/exepirit/yggmap/pkg/adminapi"
 	"github.com/exepirit/yggmap/pkg/collection"
+	"github.com/rs/zerolog/log"
 )
 
 // NetworkVisitor is an interface that allows users to visit nodes and links in a network.
 type NetworkVisitor interface {
 	// VisitNode visits a node in the network.
-	// Returns true if the visitor should continue visiting the graph deep, false otherwise.
+	// Returns true if the visitor should continue visiting the graph, false otherwise.
 	VisitNode(node network.Node) bool
 
 	// VisitLink visits a link between two nodes in the network.
 	// Returns true if the visitor should continue visiting the graph deep, false otherwise.
 	VisitLink(from, to network.PublicKey) bool
 }
+
+// TODO: use global logger or options
+var logger = log.Logger.With().
+	Str("module", "crawl").
+	Logger()
 
 // WalkNetwork walks through a network and visits each node and link using a NetworkVisitor.
 func WalkNetwork(ctx context.Context, client *adminapi.Client, visitor NetworkVisitor) error {
@@ -32,24 +38,32 @@ func WalkNetwork(ctx context.Context, client *adminapi.Client, visitor NetworkVi
 	visitQueue.Put(network.MustParseKey(getSelfResponse.PublicKey))
 
 	// Visit each node in the queue and its neighbors.
-	currentNodeKey, haveNode := visitQueue.Pop()
-	for haveNode {
+	for {
+		currentNodeKey, haveNode := visitQueue.Pop()
+		if !haveNode {
+			return nil
+		}
+
 		currentNode, neighbors, err := retriveNodeInfo(ctx, client, currentNodeKey)
 		if err != nil {
-			return fmt.Errorf("cannot crawl node %q", currentNodeKey.String())
+			logger.Warn().
+				Str("key", currentNodeKey.String()).
+				Err(err).
+				Msg("Cannot crawl node")
+			continue
 		}
 		visitedNodes.Put(currentNode.PublicKey.String())
 
 		// Visit the current node using the NetworkVisitor.
 		mustContinue := visitor.VisitNode(*currentNode)
 		if !mustContinue {
-			continue
+			return nil
 		}
 
 		for _, neighbor := range neighbors {
 			// Visit the link between the current node and its neighbor using the NetworkVisitor.
-			mustContinue = visitor.VisitLink(currentNode.PublicKey, neighbor)
-			if !mustContinue {
+			mustFollow := visitor.VisitLink(currentNode.PublicKey, neighbor)
+			if !mustFollow {
 				continue
 			}
 
@@ -59,8 +73,6 @@ func WalkNetwork(ctx context.Context, client *adminapi.Client, visitor NetworkVi
 			}
 		}
 	}
-
-	return nil
 }
 
 func retriveNodeInfo(
