@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/exepirit/yggmap/pkg/yggdrasil"
 	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -19,6 +17,7 @@ func (crawler NodeCrawler) GetNode(key yggdrasil.PublicKey) (*yggdrasil.Node, er
 		IsActive: true,
 	}
 
+	// FIXME(bug): any debug_remoteget* method not working on local node
 	getSelfResponse, err := crawler.Client.RemoteGetSelf(key.String())
 	if err != nil {
 		return nil, fmt.Errorf("get basic node info: %w", err)
@@ -35,7 +34,6 @@ func (crawler NodeCrawler) GetNode(key yggdrasil.PublicKey) (*yggdrasil.Node, er
 		return nil, fmt.Errorf("invalid node public key: %w", err)
 	}
 
-	info.Coordinates = parseCoordinatesFromStr(selfInfo.Coordinates)
 	info.AdditionalInfo = make(map[string]interface{})
 
 	detailInfo, err := crawler.Client.GetNodeInfo(key.String())
@@ -61,14 +59,4 @@ func (crawler NodeCrawler) GetPeersKeys(targetKey yggdrasil.PublicKey) ([]yggdra
 		keys[i] = yggdrasil.MustParseKey(k)
 	}
 	return keys, nil
-}
-
-func parseCoordinatesFromStr(s string) []int {
-	s = s[1 : len(s)-1]
-	split := strings.Split(s, " ")
-	coords := make([]int, len(split))
-	for i, s := range split {
-		coords[i], _ = strconv.Atoi(s)
-	}
-	return coords
 }

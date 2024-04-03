@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	yggdrasilSock := flag.String("socket", "unix:///var/run/yggdrasil.sock", "Yggdrasil API socket")
+	yggdrasilSock := flag.String("socket", "unix:///var/run/yggdrasil/yggdrasil.sock", "Yggdrasil API socket")
 	flag.Parse()
 
 	log.Logger = log.Output(zerolog.ConsoleWriter{
