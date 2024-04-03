@@ -9,10 +9,8 @@ import (
 
 // StoringVisitor a crawl.NetworkVisitor implementation, that storing network data in the database.
 type StoringVisitor struct {
-	logger zerolog.Logger
-
-	repository network.INetworkRepository
-	network    *network.Network
+	logger  zerolog.Logger
+	network *network.Network
 }
 
 func (visitor StoringVisitor) VisitNode(node yggdrasil.Node) bool {
@@ -29,5 +27,6 @@ func (visitor StoringVisitor) VisitLink(from, to yggdrasil.PublicKey) bool {
 }
 
 func (visitor StoringVisitor) Save(ctx context.Context) error {
-	return visitor.repository.Update(ctx, *visitor.network)
+	// TODO: implement store network information in a database
+	panic("not implemented")
 }
