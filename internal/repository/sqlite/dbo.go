@@ -3,11 +3,10 @@ package sqlite
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/exepirit/yggmap/pkg/yggdrasil"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/exepirit/yggmap/internal/domain/network"
 )
 
 type nodeDbo struct {
@@ -18,8 +17,8 @@ type nodeDbo struct {
 	IsActive       bool      `db:"is_active"`
 }
 
-func mapNodeToAggregate(nodeDbo nodeDbo) (network.Node, error) {
-	node := network.Node{}
+func mapNodeToAggregate(nodeDbo nodeDbo) (yggdrasil.Node, error) {
+	node := yggdrasil.Node{}
 	node.PublicKey = nodeDbo.PublicKey
 
 	coordinates := strings.Split(nodeDbo.Coordinates, ",")
@@ -43,7 +42,7 @@ func mapNodeToAggregate(nodeDbo nodeDbo) (network.Node, error) {
 	return node, nil
 }
 
-func mapAggregateToNode(node network.Node) nodeDbo {
+func mapAggregateToNode(node yggdrasil.Node) nodeDbo {
 	var nodeDbo nodeDbo
 
 	nodeDbo.PublicKey = node.PublicKey

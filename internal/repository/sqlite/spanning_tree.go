@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/exepirit/yggmap/internal/domain/network"
+	"github.com/exepirit/yggmap/pkg/yggdrasil"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -22,7 +23,7 @@ func (repo SpanningTreeRepository) GetCurrent(ctx context.Context) (network.Netw
 		return net, fmt.Errorf("failed query nodes: %w", err)
 	}
 
-	net.Nodes = make([]network.Node, len(nodesDbo))
+	net.Nodes = make([]yggdrasil.Node, len(nodesDbo))
 	for i, node := range nodesDbo {
 		net.Nodes[i], err = mapNodeToAggregate(node)
 		if err != nil {

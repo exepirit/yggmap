@@ -1,4 +1,4 @@
-package network
+package yggdrasil
 
 import (
 	"encoding/hex"

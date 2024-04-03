@@ -1,21 +1,20 @@
-package crawl
+package netstat
 
 import (
 	"fmt"
+	"github.com/exepirit/yggmap/pkg/yggdrasil"
+	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/exepirit/yggmap/internal/domain/network"
-	"github.com/exepirit/yggmap/pkg/adminapi"
 )
 
 type NodeCrawler struct {
 	Client *adminapi.Client
 }
 
-func (crawler NodeCrawler) GetNode(key network.PublicKey) (*network.Node, error) {
-	info := &network.Node{
+func (crawler NodeCrawler) GetNode(key yggdrasil.PublicKey) (*yggdrasil.Node, error) {
+	info := &yggdrasil.Node{
 		LastSeen: time.Now(),
 		IsActive: true,
 	}
@@ -31,7 +30,7 @@ func (crawler NodeCrawler) GetNode(key network.PublicKey) (*network.Node, error)
 		return nil, fmt.Errorf("response doesn't contain node itself info")
 	}
 
-	info.PublicKey, err = network.ParseKey(selfInfo.PublicKey)
+	info.PublicKey, err = yggdrasil.ParseKey(selfInfo.PublicKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid node public key: %w", err)
 	}
@@ -50,16 +49,16 @@ func (crawler NodeCrawler) GetNode(key network.PublicKey) (*network.Node, error)
 	return info, nil
 }
 
-func (crawler NodeCrawler) GetPeersKeys(targetKey network.PublicKey) ([]network.PublicKey, error) {
+func (crawler NodeCrawler) GetPeersKeys(targetKey yggdrasil.PublicKey) ([]yggdrasil.PublicKey, error) {
 	peers, err := crawler.Client.RemoteGetPeers(targetKey.String())
 	if err != nil {
 		return nil, err
 	}
 
 	peersKeys := peers[targetKey.IPv6Address()].Keys
-	keys := make([]network.PublicKey, len(peersKeys))
+	keys := make([]yggdrasil.PublicKey, len(peersKeys))
 	for i, k := range peersKeys {
-		keys[i] = network.MustParseKey(k)
+		keys[i] = yggdrasil.MustParseKey(k)
 	}
 	return keys, nil
 }

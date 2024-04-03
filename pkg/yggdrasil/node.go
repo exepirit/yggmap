@@ -1,6 +1,8 @@
-package network
+package yggdrasil
 
-import "time"
+import (
+	"time"
+)
 
 type Node struct {
 	PublicKey      PublicKey

@@ -1,10 +1,13 @@
 package network
 
-import "context"
+import (
+	"context"
+	"github.com/exepirit/yggmap/pkg/yggdrasil"
+)
 
 type INodeRepository interface {
-	Get(ctx context.Context, key PublicKey) (Node, error)
-	GetAll(ctx context.Context) ([]Node, error)
+	Get(ctx context.Context, key yggdrasil.PublicKey) (yggdrasil.Node, error)
+	GetAll(ctx context.Context) ([]yggdrasil.Node, error)
 }
 
 type INetworkRepository interface {
@@ -22,5 +25,5 @@ type INetworkService interface {
 }
 
 type INodeService interface {
-	GetActive(ctx context.Context) ([]Node, error)
+	GetActive(ctx context.Context) ([]yggdrasil.Node, error)
 }

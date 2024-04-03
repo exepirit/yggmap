@@ -1,11 +1,11 @@
-package crawl
+package netstat
 
 import (
 	"context"
 	"fmt"
-	"github.com/exepirit/yggmap/internal/domain/network"
-	"github.com/exepirit/yggmap/pkg/adminapi"
 	"github.com/exepirit/yggmap/pkg/collection"
+	"github.com/exepirit/yggmap/pkg/yggdrasil"
+	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
 	"github.com/rs/zerolog/log"
 )
 
@@ -13,11 +13,11 @@ import (
 type NetworkVisitor interface {
 	// VisitNode visits a node in the network.
 	// Returns true if the visitor should continue visiting the graph, false otherwise.
-	VisitNode(node network.Node) bool
+	VisitNode(node yggdrasil.Node) bool
 
 	// VisitLink visits a link between two nodes in the network.
 	// Returns true if the visitor should continue visiting the graph deep, false otherwise.
-	VisitLink(from, to network.PublicKey) bool
+	VisitLink(from, to yggdrasil.PublicKey) bool
 }
 
 // TODO: use global logger or options
@@ -28,14 +28,14 @@ var logger = log.Logger.With().
 // WalkNetwork walks through a network and visits each node and link using a NetworkVisitor.
 func WalkNetwork(ctx context.Context, client *adminapi.Client, visitor NetworkVisitor) error {
 	visitedNodes := collection.NewSet[string]()
-	visitQueue := collection.NewQueue[network.PublicKey]()
+	visitQueue := collection.NewQueue[yggdrasil.PublicKey]()
 
 	// Get the current node and add it to the queue.
 	getSelfResponse, err := client.GetSelf()
 	if err != nil {
 		return fmt.Errorf("failed to get current node: %w", err)
 	}
-	visitQueue.Put(network.MustParseKey(getSelfResponse.PublicKey))
+	visitQueue.Put(yggdrasil.MustParseKey(getSelfResponse.PublicKey))
 
 	// Visit each node in the queue and its neighbors.
 	for {
@@ -78,8 +78,8 @@ func WalkNetwork(ctx context.Context, client *adminapi.Client, visitor NetworkVi
 func retriveNodeInfo(
 	_ context.Context,
 	yggdrasil *adminapi.Client,
-	key network.PublicKey,
-) (node *network.Node, peers []network.PublicKey, err error) {
+	key yggdrasil.PublicKey,
+) (node *yggdrasil.Node, peers []yggdrasil.PublicKey, err error) {
 	nodeInfoCrawler := NodeCrawler{Client: yggdrasil}
 	node, err = nodeInfoCrawler.GetNode(key)
 	if err != nil {

@@ -3,8 +3,8 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"github.com/exepirit/yggmap/pkg/yggdrasil"
 
-	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -18,7 +18,7 @@ type NodeRepository struct {
 	db *sqlx.DB
 }
 
-func (repo NodeRepository) Get(ctx context.Context, key network.PublicKey) (network.Node, error) {
+func (repo NodeRepository) Get(ctx context.Context, key yggdrasil.PublicKey) (yggdrasil.Node, error) {
 	var nodeDbo nodeDbo
 	err := repo.db.GetContext(
 		ctx, &nodeDbo,
@@ -26,13 +26,13 @@ func (repo NodeRepository) Get(ctx context.Context, key network.PublicKey) (netw
 		[]byte(key),
 	)
 	if err != nil {
-		return network.Node{}, fmt.Errorf("failed query node: %w", err)
+		return yggdrasil.Node{}, fmt.Errorf("failed query node: %w", err)
 	}
 
 	return mapNodeToAggregate(nodeDbo)
 }
 
-func (repo NodeRepository) GetAll(ctx context.Context) ([]network.Node, error) {
+func (repo NodeRepository) GetAll(ctx context.Context) ([]yggdrasil.Node, error) {
 	nodesDbo := []nodeDbo{}
 	err := repo.db.SelectContext(
 		ctx, &nodesDbo,
@@ -41,7 +41,7 @@ func (repo NodeRepository) GetAll(ctx context.Context) ([]network.Node, error) {
 		return nil, fmt.Errorf("failed query nodes: %w", err)
 	}
 
-	nodes := make([]network.Node, len(nodesDbo))
+	nodes := make([]yggdrasil.Node, len(nodesDbo))
 
 	for i, node := range nodesDbo {
 		nodes[i], err = mapNodeToAggregate(node)

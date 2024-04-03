@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/exepirit/yggmap/internal/crawl"
 	"github.com/exepirit/yggmap/internal/domain/network"
+	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
+	"github.com/exepirit/yggmap/pkg/yggdrasil/netstat"
 	"os"
 	"time"
 
 	"github.com/exepirit/yggmap/internal/infrastructure"
 	"github.com/exepirit/yggmap/internal/repository"
-	"github.com/exepirit/yggmap/pkg/adminapi"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -43,7 +43,7 @@ func main() {
 		network:    &network.Network{},
 	}
 
-	err = crawl.WalkNetwork(context.Background(), client, visitor)
+	err = netstat.WalkNetwork(context.Background(), client, visitor)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error occurred while network crawling")
 	}

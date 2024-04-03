@@ -1,5 +1,7 @@
 package network
 
+import "github.com/exepirit/yggmap/pkg/yggdrasil"
+
 type NodesLink struct {
-	From, To PublicKey
+	From, To yggdrasil.PublicKey
 }

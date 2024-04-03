@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/exepirit/yggmap/internal/domain/network"
+	"github.com/exepirit/yggmap/pkg/yggdrasil"
 	"github.com/rs/zerolog"
 )
 
@@ -14,7 +15,7 @@ type StoringVisitor struct {
 	network    *network.Network
 }
 
-func (visitor StoringVisitor) VisitNode(node network.Node) bool {
+func (visitor StoringVisitor) VisitNode(node yggdrasil.Node) bool {
 	_ = visitor.network.AddNode(node)
 	visitor.logger.Info().
 		Str("key", node.PublicKey.String()).
@@ -22,7 +23,7 @@ func (visitor StoringVisitor) VisitNode(node network.Node) bool {
 	return len(visitor.network.Nodes) < 10 // TODO: remove limitation after write a tests
 }
 
-func (visitor StoringVisitor) VisitLink(from, to network.PublicKey) bool {
+func (visitor StoringVisitor) VisitLink(from, to yggdrasil.PublicKey) bool {
 	visitor.network.ConnectNodes(from, to)
 	return len(visitor.network.Nodes) < 10 // TODO: remove limitation after write a tests
 }
