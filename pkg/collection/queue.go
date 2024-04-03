@@ -1,3 +1,5 @@
+// Package collection provides two fundamental collection data structures. Structures are designed to handle elements
+// of any type and allow for type-safe operations.
 package collection
 
 import "sync"

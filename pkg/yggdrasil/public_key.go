@@ -25,16 +25,22 @@ func ParseKey(s string) (PublicKey, error) {
 	return key, nil
 }
 
+// PublicKey represents Yggdrasil network node public key.
 type PublicKey []byte
 
+// String returns the string representation of the PublicKey.
+//
+// The String method encodes the PublicKey to a hexadecimal string.
 func (key PublicKey) String() string {
 	return hex.EncodeToString(key)
 }
 
+// Equal checks if the current PublicKey is equal to another PublicKey.
 func (key PublicKey) Equal(other PublicKey) bool {
 	return key.String() == other.String()
 }
 
+// IPv6Address transforms the PublicKey into an network IPv6 address.
 func (key PublicKey) IPv6Address() string {
 	buf := make([]byte, 32)
 	copy(buf[:], key[:])

@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// StoringVisitor a crawl.NetworkVisitor implementation, that storing network data in the database.
+// StoringVisitor a crawl.NetworkVisitor implementation, that stores network data in the database.
 type StoringVisitor struct {
 	logger  zerolog.Logger
 	network *network.Network
