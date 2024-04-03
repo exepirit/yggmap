@@ -6,14 +6,15 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type RetainingVisitor struct {
+// StoringVisitor a crawl.NetworkVisitor implementation, that storing network data in the database.
+type StoringVisitor struct {
 	logger zerolog.Logger
 
 	repository network.INetworkRepository
 	network    *network.Network
 }
 
-func (visitor RetainingVisitor) VisitNode(node network.Node) bool {
+func (visitor StoringVisitor) VisitNode(node network.Node) bool {
 	_ = visitor.network.AddNode(node)
 	visitor.logger.Info().
 		Str("key", node.PublicKey.String()).
@@ -21,11 +22,11 @@ func (visitor RetainingVisitor) VisitNode(node network.Node) bool {
 	return len(visitor.network.Nodes) < 10 // TODO: remove limitation after write a tests
 }
 
-func (visitor RetainingVisitor) VisitLink(from, to network.PublicKey) bool {
+func (visitor StoringVisitor) VisitLink(from, to network.PublicKey) bool {
 	visitor.network.ConnectNodes(from, to)
 	return len(visitor.network.Nodes) < 10 // TODO: remove limitation after write a tests
 }
 
-func (visitor RetainingVisitor) Save(ctx context.Context) error {
+func (visitor StoringVisitor) Save(ctx context.Context) error {
 	return visitor.repository.Update(ctx, *visitor.network)
 }

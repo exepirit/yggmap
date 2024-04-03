@@ -37,7 +37,7 @@ func main() {
 	netRepo := repository.NewNetworkRepository(database)
 
 	client := adminapi.Bind(*yggdrasilSock)
-	visitor := RetainingVisitor{
+	visitor := StoringVisitor{
 		logger:     log.Logger,
 		repository: netRepo,
 		network:    &network.Network{},
