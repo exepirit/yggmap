@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/exepirit/yggmap/pkg/yggdrasil"
 	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
-	"time"
 )
 
 type NodeCrawler struct {
@@ -12,10 +11,7 @@ type NodeCrawler struct {
 }
 
 func (crawler NodeCrawler) GetNode(key yggdrasil.PublicKey) (*yggdrasil.Node, error) {
-	info := &yggdrasil.Node{
-		LastSeen: time.Now(),
-		IsActive: true,
-	}
+	info := &yggdrasil.Node{}
 
 	// FIXME(bug): any debug_remoteget* method not working on local node
 	getSelfResponse, err := crawler.Client.RemoteGetSelf(key.String())
