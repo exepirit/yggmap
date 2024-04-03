@@ -2,6 +2,10 @@
 
 yggmap is a [Yggdrasil network](https://yggdrasil-network.github.io/) information crawler and explorer.
 
+> **Warning!**
+> 
+> Project is under refactoring. Please note that the current version of mainline is unstable.
+
 ## Roadmap
 
 - [ ] Network data collection
