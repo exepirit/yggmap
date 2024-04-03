@@ -5,10 +5,12 @@ import (
 	"log/slog"
 )
 
+// FxLogger is used for logging events related to the Fx application lifecycle.
 type FxLogger struct {
 	Logger *slog.Logger
 }
 
+// LogEvent handles different types of fxevent.Event and logs them based on their type.
 func (fx *FxLogger) LogEvent(event fxevent.Event) {
 	switch e := event.(type) {
 	case *fxevent.OnStartExecuting:
