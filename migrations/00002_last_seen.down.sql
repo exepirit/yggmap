@@ -1,1 +1,0 @@
-ALTER TABLE nodes DROP last_seen;
