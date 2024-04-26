@@ -14,6 +14,7 @@ import (
 
 func main() {
 	yggdrasilSock := flag.String("socket", "unix:///var/run/yggdrasil/yggdrasil.sock", "Yggdrasil API socket")
+	dbPath := flag.String("db.path", "database.db", "Database file path")
 	flag.Parse()
 
 	slog.SetDefault(slog.New(
@@ -23,7 +24,7 @@ func main() {
 		}),
 	))
 
-	db, err := bbolt.Open("database.db", 0644, nil)
+	db, err := bbolt.Open(*dbPath, 0644, nil)
 	if err != nil {
 		slog.Error("Cannot open database", "error", err)
 		os.Exit(1)
