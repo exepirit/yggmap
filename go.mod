@@ -5,7 +5,6 @@ go 1.21
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.0
 	github.com/jackc/pgx v3.6.2+incompatible
-	github.com/rs/zerolog v1.26.1
 	github.com/yggdrasil-network/yggdrasil-go v0.5.5
 	go.uber.org/fx v1.16.0
 )

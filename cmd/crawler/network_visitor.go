@@ -4,20 +4,19 @@ import (
 	"context"
 	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/exepirit/yggmap/pkg/yggdrasil"
-	"github.com/rs/zerolog"
+	"log/slog"
 )
 
 // StoringVisitor a crawl.NetworkVisitor implementation, that stores network data in the database.
 type StoringVisitor struct {
-	logger  zerolog.Logger
 	network *network.Network
 }
 
 func (visitor StoringVisitor) VisitNode(node yggdrasil.Node) bool {
 	_ = visitor.network.AddNode(node)
-	visitor.logger.Info().
-		Str("key", node.PublicKey.String()).
-		Msg("New node discovered")
+	slog.Info("New node discovered",
+		"key", node.PublicKey.String(),
+		"ip", node.PublicKey.IPv6Address())
 	return len(visitor.network.Nodes) < 10 // TODO: remove limitation after write a tests
 }
 
