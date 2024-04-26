@@ -6,6 +6,7 @@ require (
 	github.com/antlr4-go/antlr/v4 v4.13.0
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/yggdrasil-network/yggdrasil-go v0.5.5
+	go.etcd.io/bbolt v1.3.9
 	go.uber.org/fx v1.16.0
 )
 
