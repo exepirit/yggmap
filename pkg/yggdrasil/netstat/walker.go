@@ -49,6 +49,7 @@ func (w *Walker) visitLocal() error {
 		if next := w.Visitor.VisitLink(node.PublicKey, neighbor); !next {
 			return ErrStopIteration
 		}
+		w.queue.Put(neighbor)
 	}
 	return nil
 }

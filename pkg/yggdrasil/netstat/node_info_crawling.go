@@ -17,14 +17,8 @@ func crawlCurrent(client *adminapi.Client) (yggdrasil.Node, error) {
 		return yggdrasil.Node{}, fmt.Errorf("invalid node key %q", getSelfResponse.PublicKey)
 	}
 
-	info, err := crawlAdditionalInfo(client, getSelfResponse.PublicKey)
-	if err != nil {
-		return yggdrasil.Node{}, fmt.Errorf("failed to additional node info: %w", err)
-	}
-
 	return yggdrasil.Node{
-		PublicKey:      publicKey,
-		AdditionalInfo: info,
+		PublicKey: publicKey,
 	}, nil
 }
 
@@ -71,7 +65,7 @@ func crawlNodeNeighbors(client *adminapi.Client, key yggdrasil.PublicKey) ([]ygg
 	if err != nil {
 		return nil, err
 	}
-	peers, ok := getPeersResponse[key.String()]
+	peers, ok := getPeersResponse[key.IPv6Address()]
 	if !ok {
 		return []yggdrasil.PublicKey{}, nil
 	}
