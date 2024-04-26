@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/exepirit/yggmap/pkg/yggdrasil"
 	"log/slog"
@@ -22,10 +23,13 @@ func (visitor StoringVisitor) VisitNode(node yggdrasil.Node) bool {
 
 func (visitor StoringVisitor) VisitLink(from, to yggdrasil.PublicKey) bool {
 	visitor.network.ConnectNodes(from, to)
+	slog.Info("New link discovered",
+		"from", from.IPv6Address(),
+		"to", to.IPv6Address())
 	return len(visitor.network.Nodes) < 10 // TODO: remove limitation after write a tests
 }
 
 func (visitor StoringVisitor) Save(ctx context.Context) error {
 	// TODO: implement store network information in a database
-	panic("not implemented")
+	return errors.New("not implemented")
 }

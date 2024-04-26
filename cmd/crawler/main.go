@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"github.com/exepirit/yggmap/internal/domain/network"
 	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	err := walker.StartFromLocal()
-	if err != nil {
+	if err != nil && !errors.Is(err, netstat.ErrStopIteration) {
 		slog.Error("Error occurred while network crawling", "error", err)
 		os.Exit(1)
 	}
