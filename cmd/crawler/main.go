@@ -28,7 +28,12 @@ func main() {
 		network: &network.Network{},
 	}
 
-	err := netstat.WalkNetwork(context.Background(), client, visitor)
+	walker := netstat.Walker{
+		Visitor: visitor,
+		Client:  client,
+	}
+
+	err := walker.StartFromLocal()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error occurred while network crawling")
 	}
