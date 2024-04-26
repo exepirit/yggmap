@@ -9,8 +9,8 @@ yggmap is a [Yggdrasil network](https://yggdrasil-network.github.io/) informatio
 ## Roadmap
 
 - [ ] Network data collection
-  - [ ] Collecting basic data of network nodes
-  - [ ] Collecting of network structure
+  - [x] Collecting basic data of network nodes
+  - [x] Collecting of network structure
   - [ ] Store collected information in a database
 - [ ] Explore network structure in a web application
   - [ ] GraphQL API
