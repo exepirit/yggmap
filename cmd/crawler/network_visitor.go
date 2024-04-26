@@ -2,34 +2,33 @@ package main
 
 import (
 	"context"
-	"errors"
-	"github.com/exepirit/yggmap/internal/domain/network"
+	"github.com/exepirit/yggmap/internal/data"
+	"github.com/exepirit/yggmap/internal/data/entity"
 	"github.com/exepirit/yggmap/pkg/yggdrasil"
 	"log/slog"
+	"time"
 )
 
 // StoringVisitor a crawl.NetworkVisitor implementation, that stores network data in the database.
 type StoringVisitor struct {
-	network *network.Network
+	nodesUpdater data.Updater[entity.YggdrasilNode]
 }
 
 func (visitor StoringVisitor) VisitNode(node yggdrasil.Node) bool {
-	_ = visitor.network.AddNode(node)
-	slog.Info("New node discovered",
-		"key", node.PublicKey.String(),
-		"ip", node.PublicKey.IPv6Address())
-	return len(visitor.network.Nodes) < 10 // TODO: remove limitation after write a tests
+	ent := entity.YggdrasilNode{
+		PublicKey: node.PublicKey,
+		LastSeen:  time.Now(),
+	}
+	slog.Info("New node discovered", "id", ent.ID())
+
+	err := visitor.nodesUpdater.PutBatch(context.Background(), ent)
+	if err != nil {
+		slog.Error("Failed to store node", "error", err)
+	}
+
+	return true
 }
 
 func (visitor StoringVisitor) VisitLink(from, to yggdrasil.PublicKey) bool {
-	visitor.network.ConnectNodes(from, to)
-	slog.Info("New link discovered",
-		"from", from.IPv6Address(),
-		"to", to.IPv6Address())
-	return len(visitor.network.Nodes) < 10 // TODO: remove limitation after write a tests
-}
-
-func (visitor StoringVisitor) Save(ctx context.Context) error {
-	// TODO: implement store network information in a database
-	return errors.New("not implemented")
+	return true
 }

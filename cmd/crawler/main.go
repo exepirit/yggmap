@@ -1,12 +1,13 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"flag"
-	"github.com/exepirit/yggmap/internal/domain/network"
+	"github.com/exepirit/yggmap/internal/data/boltdb"
+	"github.com/exepirit/yggmap/internal/data/entity"
 	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
 	"github.com/exepirit/yggmap/pkg/yggdrasil/netstat"
+	"go.etcd.io/bbolt"
 	"log/slog"
 	"os"
 )
@@ -22,9 +23,21 @@ func main() {
 		}),
 	))
 
+	db, err := bbolt.Open("database.db", 0644, nil)
+	if err != nil {
+		slog.Error("Cannot open database", "error", err)
+		os.Exit(1)
+	}
+
+	nodeRepository, err := boltdb.CreateRepository[entity.YggdrasilNode](db)
+	if err != nil {
+		slog.Error("Cannot create repository for YggdrasilNode", "error", err)
+		os.Exit(1)
+	}
+
 	client := adminapi.Bind(*yggdrasilSock)
 	visitor := StoringVisitor{
-		network: &network.Network{},
+		nodesUpdater: nodeRepository,
 	}
 
 	walker := netstat.Walker{
@@ -32,14 +45,9 @@ func main() {
 		Client:  client,
 	}
 
-	err := walker.StartFromLocal()
+	err = walker.StartFromLocal()
 	if err != nil && !errors.Is(err, netstat.ErrStopIteration) {
 		slog.Error("Error occurred while network crawling", "error", err)
-		os.Exit(1)
-	}
-
-	if err = visitor.Save(context.Background()); err != nil {
-		slog.Error("Cannot store network in database", "error", err)
 		os.Exit(1)
 	}
 }

@@ -9,17 +9,17 @@ import (
 )
 
 // CreateRepository creates a new [GenericRepository] with provided database.
-func CreateRepository[T data.Entity](db *bbolt.DB) (GenericRepository[T], error) {
+func CreateRepository[T data.Entity](db *bbolt.DB) (*GenericRepository[T], error) {
 	bucketName := getBucketName[T]()
 	err := db.Update(func(tx *bbolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists(bucketName)
 		return err
 	})
 	if err != nil {
-		return GenericRepository[T]{}, err
+		return nil, err
 	}
 
-	return GenericRepository[T]{
+	return &GenericRepository[T]{
 		db:         db,
 		bucketName: getBucketName[T](),
 	}, nil
