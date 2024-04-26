@@ -4,11 +4,6 @@ package collection
 
 import "sync"
 
-// NewQueue creates a new, empty queue of type T.
-func NewQueue[T any]() Queue[T] {
-	return Queue[T]{s: make([]T, 0)}
-}
-
 // Queue is a type-safe queue that can hold elements of any type.
 type Queue[T any] struct {
 	s    []T
