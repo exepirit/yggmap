@@ -55,8 +55,7 @@ func (w *Walker) visitLocal() error {
 }
 
 func (w *Walker) visitRecursive() error {
-	// Start an infinite loop that will continue until there are no more items in the queue. This ensures we keep
-	// visiting nodes as long as they're reachable from the local one.
+	// This ensures we keep visiting nodes as long as they're reachable from the local one.
 	for w.queue.Len() > 0 {
 		nodeKey, _ := w.queue.Pop()
 		node, neighbors, err := w.collectNode(nodeKey)
@@ -65,7 +64,6 @@ func (w *Walker) visitRecursive() error {
 			continue
 		}
 
-		// Visit the current node and mark it as visited.
 		if next := w.Visitor.VisitNode(node); !next {
 			return ErrStopIteration
 		}
@@ -84,7 +82,6 @@ func (w *Walker) visitRecursive() error {
 	return nil
 }
 
-// collectNode gathers information about a node associated with the given key.
 func (w *Walker) collectNode(key yggdrasil.PublicKey) (node yggdrasil.Node, neighbors []yggdrasil.PublicKey, err error) {
 	node, err = crawlNode(w.Client, key)
 	if err != nil {
@@ -94,7 +91,6 @@ func (w *Walker) collectNode(key yggdrasil.PublicKey) (node yggdrasil.Node, neig
 	return
 }
 
-// collectLocalNode gathers information about the local node and its neighbors from the network.
 func (w *Walker) collectLocalNode() (node yggdrasil.Node, neighbors []yggdrasil.PublicKey, err error) {
 	node, err = crawlCurrent(w.Client)
 	if err != nil {
