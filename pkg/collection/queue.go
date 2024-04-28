@@ -1,11 +1,8 @@
+// Package collection provides two fundamental collection data structures. Structures are designed to handle elements
+// of any type and allow for type-safe operations.
 package collection
 
 import "sync"
-
-// NewQueue creates a new, empty queue of type T.
-func NewQueue[T any]() Queue[T] {
-	return Queue[T]{s: make([]T, 0)}
-}
 
 // Queue is a type-safe queue that can hold elements of any type.
 type Queue[T any] struct {

@@ -2,53 +2,71 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
-	"github.com/exepirit/yggmap/internal/crawl"
-	"github.com/exepirit/yggmap/internal/domain/network"
+	"github.com/exepirit/yggmap/internal/data/boltdb"
+	"github.com/exepirit/yggmap/internal/data/entity"
+	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
+	"github.com/exepirit/yggmap/pkg/yggdrasil/netstat"
+	"go.etcd.io/bbolt"
+	"log/slog"
 	"os"
-	"time"
-
-	"github.com/exepirit/yggmap/internal/infrastructure"
-	"github.com/exepirit/yggmap/internal/repository"
-	"github.com/exepirit/yggmap/pkg/adminapi"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	dbType := flag.String("dbType", "sqlite3", "database type")
-	dbConnectionString := flag.String("dbConnStr", "yggdrasil_network.db", "database connection url")
-	yggdrasilSock := flag.String("socket", "unix:///var/run/yggdrasil.sock", "Yggdrasil API socket")
+	yggdrasilSock := flag.String("socket", "unix:///var/run/yggdrasil/yggdrasil.sock", "Yggdrasil API socket")
+	dbPath := flag.String("db.path", "database.db", "Database file path")
 	flag.Parse()
 
-	log.Logger = log.Output(zerolog.ConsoleWriter{
-		Out:        os.Stderr,
-		TimeFormat: time.RFC822,
-	})
+	slog.SetDefault(slog.New(
+		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			AddSource: false,
+			Level:     slog.LevelInfo,
+		}),
+	))
 
-	dbConf := infrastructure.DatabaseConfig{
-		Type:             *dbType,
-		ConnectionString: *dbConnectionString,
-	}
-	database, err := infrastructure.NewDatabase(dbConf)
+	db, err := bbolt.Open(*dbPath, 0644, nil)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("Failed to connect to database")
+		slog.Error("Failed to open the database", "error", err)
+		os.Exit(1)
 	}
-	netRepo := repository.NewNetworkRepository(database)
+
+	nodeRepository, err := boltdb.CreateRepository[entity.YggdrasilNode](db)
+	if err != nil {
+		slog.Error("Failed to create the YggdrasilNode repository", "error", err)
+		os.Exit(1)
+	}
+	linksRepository, err := boltdb.CreateRepository[entity.NodeLink](db)
+	if err != nil {
+		slog.Error("Failed to create the NodeLink repository", "error", err)
+		os.Exit(1)
+	}
+	snapshotRepository, err := boltdb.CreateRepository[entity.SnapshotMeta](db)
+	if err != nil {
+		slog.Error("Failed to create the SnapshotMeta repository", "error", err)
+		os.Exit(1)
+	}
+	visitor := &StoringVisitor{
+		nodesUpdater:    nodeRepository,
+		linksUpdater:    linksRepository,
+		snapshotUpdater: snapshotRepository,
+	}
 
 	client := adminapi.Bind(*yggdrasilSock)
-	visitor := RetainingVisitor{
-		logger:     log.Logger,
-		repository: netRepo,
-		network:    &network.Network{},
+	walker := netstat.Walker{
+		Visitor: visitor,
+		Client:  client,
 	}
 
-	err = crawl.WalkNetwork(context.Background(), client, visitor)
+	err = walker.StartFromLocal()
+	if err != nil && !errors.Is(err, netstat.ErrStopIteration) {
+		slog.Error("Failed to start the network crawling", "error", err)
+		os.Exit(1)
+	}
+
+	err = visitor.Save(context.Background())
 	if err != nil {
-		log.Fatal().Err(err).Msg("Error occurred while network crawling")
-	}
-
-	if err = visitor.Save(context.Background()); err != nil {
-		log.Fatal().Err(err).Msg("Cannot save network")
+		slog.Error("Failed to save the network graph in the database", "error", err)
+		os.Exit(1)
 	}
 }
