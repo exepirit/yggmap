@@ -41,9 +41,15 @@ func main() {
 		slog.Error("Failed to create the NodeLink repository", "error", err)
 		os.Exit(1)
 	}
+	snapshotRepository, err := boltdb.CreateRepository[entity.SnapshotMeta](db)
+	if err != nil {
+		slog.Error("Failed to create the SnapshotMeta repository", "error", err)
+		os.Exit(1)
+	}
 	visitor := &StoringVisitor{
-		nodesUpdater: nodeRepository,
-		linksUpdater: linksRepository,
+		nodesUpdater:    nodeRepository,
+		linksUpdater:    linksRepository,
+		snapshotUpdater: snapshotRepository,
 	}
 
 	client := adminapi.Bind(*yggdrasilSock)

@@ -5,6 +5,7 @@ import (
 	"github.com/exepirit/yggmap/internal/data"
 	"github.com/exepirit/yggmap/internal/data/entity"
 	"github.com/exepirit/yggmap/pkg/yggdrasil"
+	"github.com/google/uuid"
 	"log/slog"
 	"time"
 )
@@ -14,8 +15,9 @@ type StoringVisitor struct {
 	foundNodes     []entity.YggdrasilNode
 	nodesAdjacency []entity.NodeLink
 
-	nodesUpdater data.Updater[entity.YggdrasilNode]
-	linksUpdater data.Updater[entity.NodeLink]
+	nodesUpdater    data.Updater[entity.YggdrasilNode]
+	linksUpdater    data.Updater[entity.NodeLink]
+	snapshotUpdater data.Updater[entity.SnapshotMeta]
 }
 
 func (visitor *StoringVisitor) VisitNode(node yggdrasil.Node) bool {
@@ -25,7 +27,7 @@ func (visitor *StoringVisitor) VisitNode(node yggdrasil.Node) bool {
 		PublicKey: node.PublicKey,
 		LastSeen:  time.Now(),
 	})
-	return true
+	return len(visitor.foundNodes) < 20
 }
 
 func (visitor *StoringVisitor) VisitLink(from, to yggdrasil.PublicKey) bool {
@@ -44,5 +46,24 @@ func (visitor *StoringVisitor) Save(ctx context.Context) error {
 	}
 	slog.Info("Nodes stored in the database", "count", len(visitor.foundNodes))
 
-	return visitor.linksUpdater.PutBatch(ctx, visitor.nodesAdjacency...)
+	err = visitor.linksUpdater.PutBatch(ctx, visitor.nodesAdjacency...)
+	if err != nil {
+		return err
+	}
+	slog.Info("Links stored in the database", "count", len(visitor.nodesAdjacency))
+
+	snapshot := entity.SnapshotMeta{
+		Identifier: uuid.New(),
+		CapturedAt: time.Now(),
+		Nodes:      make([]string, 0, len(visitor.foundNodes)),
+		Links:      make([]string, 0, len(visitor.nodesAdjacency)),
+	}
+	for _, node := range visitor.foundNodes {
+		snapshot.Nodes = append(snapshot.Nodes, node.ID())
+	}
+	for _, link := range visitor.nodesAdjacency {
+		snapshot.Links = append(snapshot.Links, link.ID())
+	}
+
+	return visitor.snapshotUpdater.PutBatch(ctx, snapshot)
 }

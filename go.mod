@@ -3,6 +3,7 @@ module github.com/exepirit/yggmap
 go 1.21
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/yggdrasil-network/yggdrasil-go v0.5.5
 	go.etcd.io/bbolt v1.3.9
 	go.uber.org/fx v1.16.0
