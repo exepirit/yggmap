@@ -1,5 +1,5 @@
 schema:
-  - schema.graphqls
+  - graphql/*.graphql
 
 exec:
   filename: internal/api/generated.go
@@ -34,3 +34,6 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  YggdrasilNode:
+    fields:
+      neighbors: {resolver: true}

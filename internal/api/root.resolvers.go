@@ -12,7 +12,7 @@ import (
 )
 
 // Nodes is the resolver for the nodes field.
-func (r *queryResolver) Nodes(ctx context.Context) ([]*dto.YggdrasilNode, error) {
+func (r *queryResolver) Nodes(ctx context.Context, skip int, limit int) (*dto.YggdrasilNodesPage, error) {
 	panic(fmt.Errorf("not implemented: Nodes - nodes"))
 }
 
