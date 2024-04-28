@@ -21,7 +21,7 @@ type StoringVisitor struct {
 }
 
 func (visitor *StoringVisitor) VisitNode(node yggdrasil.Node) bool {
-	slog.Info("Found a new node", "key", node.PublicKey.String(), "address", node.PublicKey.IPv6Address())
+	slog.Info("Found the network node", "key", node.PublicKey.String(), "address", node.PublicKey.IPv6Address())
 	visitor.foundNodes = append(visitor.foundNodes, entity.YggdrasilNode{
 		Address:   node.Address(),
 		PublicKey: node.PublicKey,
@@ -56,13 +56,9 @@ func (visitor *StoringVisitor) Save(ctx context.Context) error {
 		Identifier: uuid.New(),
 		CapturedAt: time.Now(),
 		Nodes:      make([]string, 0, len(visitor.foundNodes)),
-		Links:      make([]string, 0, len(visitor.nodesAdjacency)),
 	}
 	for _, node := range visitor.foundNodes {
 		snapshot.Nodes = append(snapshot.Nodes, node.ID())
-	}
-	for _, link := range visitor.nodesAdjacency {
-		snapshot.Links = append(snapshot.Links, link.ID())
 	}
 
 	return visitor.snapshotUpdater.PutBatch(ctx, snapshot)

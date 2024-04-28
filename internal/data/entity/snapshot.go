@@ -9,8 +9,7 @@ import (
 type SnapshotMeta struct {
 	Identifier uuid.UUID `json:"id"`
 	CapturedAt time.Time `json:"capturedAt"`
-	Nodes      []string
-	Links      []string
+	Nodes      []string  `json:"nodes"`
 }
 
 func (snapshot SnapshotMeta) ID() string {
