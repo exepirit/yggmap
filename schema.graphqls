@@ -1,0 +1,14 @@
+type Query {
+    nodes: [YggdrasilNode!]!
+}
+
+type YggdrasilNode {
+    address: String!
+    publicKey: String!
+    lastSeen: String!
+    neighbors: [YggdrasilNodeLink!]!
+}
+
+type YggdrasilNodeLink {
+    node: YggdrasilNode!
+}
