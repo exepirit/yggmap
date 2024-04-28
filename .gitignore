@@ -16,3 +16,6 @@
 
 .idea/
 .vscode/
+
+internal/api/generated.go
+internal/api/dto/*_gen.go
