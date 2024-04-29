@@ -36,6 +36,11 @@ func main() {
 		slog.Error("Failed to create the YggdrasilNode repository", "error", err)
 		os.Exit(1)
 	}
+	linksRepository, err := boltdb.CreateRepository[entity.NodeLink](db)
+	if err != nil {
+		slog.Error("Failed to create the NodeLink repository", "error", err)
+		os.Exit(1)
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -45,6 +50,9 @@ func main() {
 	srv := handler.NewDefaultServer(api.NewExecutableSchema(api.Config{Resolvers: &api.Resolver{
 		NodesLoader: data.Loader[entity.YggdrasilNode]{
 			Provider: nodeRepository,
+		},
+		LinksLoader: data.Loader[entity.NodeLink]{
+			Provider: linksRepository,
 		},
 	}}))
 

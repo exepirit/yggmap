@@ -50,14 +50,18 @@ func (repo *GenericRepository[T]) PutBatch(_ context.Context, values ...T) error
 	})
 }
 
-func (repo *GenericRepository[T]) ProvideBatch(_ context.Context, keys ...string) ([]T, error) {
+func (repo *GenericRepository[T]) ProvideBatch(_ context.Context, keys []string, skipMissing bool) ([]T, error) {
 	values := make([]T, 0, len(keys))
 	err := repo.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket(repo.bucketName)
 		for _, key := range keys {
 			rawValue := bucket.Get([]byte(key))
 			if rawValue == nil {
-				return data.ErrNotFound
+				if !skipMissing {
+					return data.ErrNotFound
+				} else {
+					continue
+				}
 			}
 
 			var value T

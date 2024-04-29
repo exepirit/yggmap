@@ -10,7 +10,7 @@ var (
 )
 
 type Provider[T Entity] interface {
-	ProvideBatch(ctx context.Context, keys ...string) ([]T, error)
+	ProvideBatch(ctx context.Context, keys []string, skipMissing bool) ([]T, error)
 	Iterate(ctx context.Context, cb func(Cursor[T]) error) error
 }
 
@@ -27,13 +27,13 @@ type Loader[T Entity] struct {
 }
 
 func (loader Loader[T]) Load(ctx context.Context, key string) (T, error) {
-	values, err := loader.Provider.ProvideBatch(ctx, key)
+	values, err := loader.Provider.ProvideBatch(ctx, []string{key}, false)
 	if err != nil {
 		return *new(T), err
 	}
 	return values[0], nil
 }
 
-func (loader Loader[T]) LoadBatch(ctx context.Context, keys []string) ([]T, error) {
-	return loader.Provider.ProvideBatch(ctx, keys...)
+func (loader Loader[T]) LoadBatch(ctx context.Context, keys []string, skipMissing bool) ([]T, error) {
+	return loader.Provider.ProvideBatch(ctx, keys, skipMissing)
 }

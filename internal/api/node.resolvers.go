@@ -6,14 +6,49 @@ package api
 
 import (
 	"context"
-	"fmt"
+	"strings"
+	"time"
 
 	"github.com/exepirit/yggmap/internal/api/dto"
+	"github.com/exepirit/yggmap/internal/data"
+	"github.com/exepirit/yggmap/internal/data/entity"
 )
 
 // Neighbors is the resolver for the neighbors field.
 func (r *yggdrasilNodeResolver) Neighbors(ctx context.Context, obj *dto.YggdrasilNode) ([]*dto.YggdrasilNodeLink, error) {
-	panic(fmt.Errorf("not implemented: Neighbors - neighbors"))
+	neighborsKeys := make([]string, 0)
+	err := r.LinksLoader.Provider.Iterate(ctx, func(cursor data.Cursor[entity.NodeLink]) error {
+		for key := cursor.Next(); key != ""; key = cursor.Next() {
+			if strings.HasPrefix(key, obj.PublicKey) {
+				value, err := cursor.Get()
+				if err != nil {
+					return err
+				}
+				neighborsKeys = append(neighborsKeys, value.In.String())
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	nodes, err := r.NodesLoader.LoadBatch(ctx, neighborsKeys, true)
+	if err != nil {
+		return nil, err
+	}
+
+	response := make([]*dto.YggdrasilNodeLink, 0, len(nodes))
+	for _, node := range nodes {
+		response = append(response, &dto.YggdrasilNodeLink{
+			Node: &dto.YggdrasilNode{
+				Address:   node.Address,
+				PublicKey: node.PublicKey.String(),
+				LastSeen:  node.LastSeen.UTC().Format(time.RFC3339),
+			},
+		})
+	}
+	return response, nil
 }
 
 // YggdrasilNode returns YggdrasilNodeResolver implementation.

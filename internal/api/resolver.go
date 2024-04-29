@@ -11,4 +11,5 @@ import (
 
 type Resolver struct {
 	NodesLoader data.Loader[entity.YggdrasilNode]
+	LinksLoader data.Loader[entity.NodeLink]
 }
