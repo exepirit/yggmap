@@ -23,6 +23,11 @@ func (cursor *GenericCursor[T]) ToLast() string {
 	return string(cursor.key)
 }
 
+func (cursor *GenericCursor[T]) Seek(key string) string {
+	cursor.key, cursor.value = cursor.cur.Seek([]byte(key))
+	return string(cursor.key)
+}
+
 func (cursor *GenericCursor[T]) Next() string {
 	cursor.key, cursor.value = cursor.cur.Next()
 	return string(cursor.key)

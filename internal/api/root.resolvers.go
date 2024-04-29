@@ -14,12 +14,16 @@ import (
 )
 
 // Nodes is the resolver for the nodes field.
-func (r *queryResolver) Nodes(ctx context.Context) (*dto.YggdrasilNodesPage, error) {
+func (r *queryResolver) Nodes(ctx context.Context, previous *string, limit int) (*dto.YggdrasilNodesPage, error) {
 	page := &dto.YggdrasilNodesPage{
-		Items: make([]*dto.YggdrasilNode, 0),
+		Items: make([]*dto.YggdrasilNode, 0, limit),
 	}
 	err := r.NodesLoader.Provider.Iterate(ctx, func(cursor data.Cursor[entity.YggdrasilNode]) error {
-		for cursor.Next() != "" {
+		if previous != nil {
+			cursor.Seek(*previous)
+		}
+
+		for cursor.Next() != "" && limit > 0 {
 			item, err := cursor.Get()
 			if err != nil {
 				return err
@@ -31,6 +35,8 @@ func (r *queryResolver) Nodes(ctx context.Context) (*dto.YggdrasilNodesPage, err
 				PublicKey: item.PublicKey.String(),
 				LastSeen:  item.LastSeen.UTC().Format(time.RFC3339),
 			})
+
+			limit--
 		}
 		return nil
 	})
