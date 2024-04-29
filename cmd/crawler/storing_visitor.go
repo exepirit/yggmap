@@ -5,7 +5,6 @@ import (
 	"github.com/exepirit/yggmap/internal/data"
 	"github.com/exepirit/yggmap/internal/data/entity"
 	"github.com/exepirit/yggmap/pkg/yggdrasil"
-	"github.com/google/uuid"
 	"log/slog"
 	"time"
 )
@@ -53,7 +52,6 @@ func (visitor *StoringVisitor) Save(ctx context.Context) error {
 	slog.Info("Links stored in the database", "count", len(visitor.nodesAdjacency))
 
 	snapshot := entity.SnapshotMeta{
-		Identifier: uuid.New(),
 		CapturedAt: time.Now(),
 		Nodes:      make([]string, 0, len(visitor.foundNodes)),
 	}
