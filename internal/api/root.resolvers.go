@@ -6,14 +6,35 @@ package api
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/exepirit/yggmap/internal/api/dto"
+	"github.com/exepirit/yggmap/internal/data"
+	"github.com/exepirit/yggmap/internal/data/entity"
 )
 
 // Nodes is the resolver for the nodes field.
-func (r *queryResolver) Nodes(ctx context.Context, skip int, limit int) (*dto.YggdrasilNodesPage, error) {
-	panic(fmt.Errorf("not implemented: Nodes - nodes"))
+func (r *queryResolver) Nodes(ctx context.Context) (*dto.YggdrasilNodesPage, error) {
+	page := &dto.YggdrasilNodesPage{
+		Items: make([]*dto.YggdrasilNode, 0),
+	}
+	err := r.NodesLoader.Provider.Iterate(ctx, func(cursor data.Cursor[entity.YggdrasilNode]) error {
+		for cursor.Next() != "" {
+			item, err := cursor.Get()
+			if err != nil {
+				return err
+			}
+
+			// TODO: move to mappers
+			page.Items = append(page.Items, &dto.YggdrasilNode{
+				Address:   item.Address,
+				PublicKey: item.PublicKey.String(),
+				LastSeen:  item.LastSeen.UTC().Format(time.RFC3339),
+			})
+		}
+		return nil
+	})
+	return page, err
 }
 
 // Query returns QueryResolver implementation.

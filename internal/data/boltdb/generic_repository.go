@@ -50,6 +50,39 @@ func (repo *GenericRepository[T]) PutBatch(_ context.Context, values ...T) error
 	})
 }
 
+func (repo *GenericRepository[T]) ProvideBatch(_ context.Context, keys ...string) ([]T, error) {
+	values := make([]T, 0, len(keys))
+	err := repo.db.View(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket(repo.bucketName)
+		for _, key := range keys {
+			rawValue := bucket.Get([]byte(key))
+			if rawValue == nil {
+				return data.ErrNotFound
+			}
+
+			var value T
+			err := json.Unmarshal(rawValue, &value) // TODO: use client-defined unmarshalling function
+			if err != nil {
+				return err
+			}
+			values = append(values, value)
+		}
+		return nil
+	})
+	return values, err
+}
+
+func (repo *GenericRepository[T]) Iterate(_ context.Context, cb func(cursor data.Cursor[T]) error) error {
+	return repo.db.View(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket(repo.bucketName)
+		cursor := &GenericCursor[T]{
+			cur: bucket.Cursor(),
+		}
+		cursor.cur.First()
+		return cb(cursor)
+	})
+}
+
 func getBucketName[T data.Entity]() []byte {
 	t := reflect.TypeOf(*new(T))
 	return []byte(t.Name()) // FIXME: there may be problems with anonymous types

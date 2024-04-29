@@ -1,5 +1,5 @@
 type Query {
-    nodes(skip: Int! = 0, limit: Int! = 50): YggdrasilNodesPage!
+    nodes: YggdrasilNodesPage!
 }
 
 type YggdrasilNodesPage {

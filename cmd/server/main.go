@@ -1,15 +1,23 @@
 package main
 
 import (
+	"flag"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/exepirit/yggmap/internal/api"
+	"github.com/exepirit/yggmap/internal/data"
+	"github.com/exepirit/yggmap/internal/data/boltdb"
+	"github.com/exepirit/yggmap/internal/data/entity"
+	"go.etcd.io/bbolt"
 	"log/slog"
 	"net/http"
 	"os"
 )
 
 func main() {
+	dbPath := flag.String("db.path", "database.db", "Database file path")
+	flag.Parse()
+
 	slog.SetDefault(slog.New(
 		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			AddSource: false,
@@ -17,12 +25,28 @@ func main() {
 		}),
 	))
 
+	db, err := bbolt.Open(*dbPath, 0644, nil)
+	if err != nil {
+		slog.Error("Failed to open the database", "error", err)
+		os.Exit(1)
+	}
+
+	nodeRepository, err := boltdb.CreateRepository[entity.YggdrasilNode](db)
+	if err != nil {
+		slog.Error("Failed to create the YggdrasilNode repository", "error", err)
+		os.Exit(1)
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	srv := handler.NewDefaultServer(api.NewExecutableSchema(api.Config{Resolvers: &api.Resolver{}}))
+	srv := handler.NewDefaultServer(api.NewExecutableSchema(api.Config{Resolvers: &api.Resolver{
+		NodesLoader: data.Loader[entity.YggdrasilNode]{
+			Provider: nodeRepository,
+		},
+	}}))
 
 	http.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
 	http.Handle("/graphql", srv)
