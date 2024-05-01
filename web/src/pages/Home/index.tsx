@@ -1,9 +1,11 @@
+import {Hero} from "./Hero";
+import {Search} from "./Search";
+
 export function Home() {
 	return (
-		<div class="home">
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
+    <div className="flex flex-col items-center">
+      <Hero />
+      <Search />
     </div>
   );
 }
