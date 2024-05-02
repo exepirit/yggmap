@@ -4,14 +4,20 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"generate": "graphql-codegen"
 	},
 	"dependencies": {
+		"@apollo/client": "^3.10.1",
+		"graphql": "^16.8.1",
+		"moment": "^2.30.1",
 		"preact": "^10.20.0",
 		"preact-iso": "^2.6.2",
 		"preact-render-to-string": "^6.4.2"
 	},
 	"devDependencies": {
+		"@graphql-codegen/cli": "^5.0.2",
+		"@graphql-codegen/client-preset": "^4.2.5",
 		"@preact/preset-vite": "^2.8.2",
 		"autoprefixer": "^10.4.19",
 		"eslint": "^8.57.0",
