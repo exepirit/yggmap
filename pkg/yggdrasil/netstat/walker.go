@@ -19,8 +19,8 @@ type Walker struct {
 	Visitor Visitor
 	Client  *adminapi.Client
 
-	queue   collection.Queue[yggdrasil.PublicKey]
-	visited collection.Set[string]
+	queue collection.Queue[yggdrasil.PublicKey]
+	found collection.Set[string]
 }
 
 // StartFromLocal initiates the crawling process from local nodes. It first visits the local node, then recursively
@@ -43,13 +43,14 @@ func (w *Walker) visitLocal() error {
 	if next := w.Visitor.VisitNode(node); !next {
 		return ErrStopIteration
 	}
-	w.visited.Put(node.PublicKey.String())
+	w.found.Put(node.PublicKey.String())
 
-	for _, neighbor := range neighbors {
-		if next := w.Visitor.VisitLink(node.PublicKey, neighbor); !next {
+	for _, neighborKey := range neighbors {
+		if next := w.Visitor.VisitLink(node.PublicKey, neighborKey); !next {
 			return ErrStopIteration
 		}
-		w.queue.Put(neighbor)
+		w.found.Put(neighborKey.String())
+		w.queue.Put(neighborKey)
 	}
 	return nil
 }
@@ -58,12 +59,9 @@ func (w *Walker) visitRecursive() error {
 	// This ensures we keep visiting nodes as long as they're reachable from the local one.
 	for w.queue.Len() > 0 {
 		slog.Debug("Next network crawling iteration starts",
-			"queueLength", w.queue.Len(), "visitedCount", w.visited.Len())
+			"queueLength", w.queue.Len(), "foundCount", w.found.Len())
 
 		nodeKey, _ := w.queue.Pop()
-		if w.visited.Contains(nodeKey.String()) {
-			continue
-		}
 		slog.Debug("Collecting node information", "key", nodeKey.String())
 
 		node, neighbors, err := w.collectNode(nodeKey)
@@ -75,15 +73,18 @@ func (w *Walker) visitRecursive() error {
 		if next := w.Visitor.VisitNode(node); !next {
 			return ErrStopIteration
 		}
-		w.visited.Put(node.PublicKey.String())
 
-		for _, neighbor := range neighbors {
-			if next := w.Visitor.VisitLink(node.PublicKey, neighbor); !next {
+		for _, neighborKey := range neighbors {
+			if next := w.Visitor.VisitLink(node.PublicKey, neighborKey); !next {
 				return ErrStopIteration
 			}
 
-			if !w.visited.Contains(neighbor.String()) {
-				w.queue.Put(neighbor)
+			// If the neighbor has not been seen before, we mark it as found and add
+			// it to the queue for further visiting
+			keyStr := neighborKey.String()
+			if !w.found.Contains(keyStr) {
+				w.found.Put(keyStr)
+				w.queue.Put(neighborKey)
 			}
 		}
 	}
