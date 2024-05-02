@@ -28,3 +28,10 @@ func (set *Set[T]) Contains(value T) bool {
 	set.lock.RUnlock()
 	return contains
 }
+
+// Len returns length of the collection.
+func (set *Set[T]) Len() int {
+	set.lock.RLock()
+	defer set.lock.RUnlock()
+	return len(set.m)
+}

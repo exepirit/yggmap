@@ -57,7 +57,15 @@ func (w *Walker) visitLocal() error {
 func (w *Walker) visitRecursive() error {
 	// This ensures we keep visiting nodes as long as they're reachable from the local one.
 	for w.queue.Len() > 0 {
+		slog.Debug("Next network crawling iteration starts",
+			"queueLength", w.queue.Len(), "visitedCount", w.visited.Len())
+
 		nodeKey, _ := w.queue.Pop()
+		if w.visited.Contains(nodeKey.String()) {
+			continue
+		}
+		slog.Debug("Collecting node information", "key", nodeKey.String())
+
 		node, neighbors, err := w.collectNode(nodeKey)
 		if err != nil {
 			slog.Warn("Cannot crawl node", "key", nodeKey.String(), "error", err)
