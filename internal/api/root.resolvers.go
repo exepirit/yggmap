@@ -6,15 +6,15 @@ package api
 
 import (
 	"context"
+	"github.com/exepirit/yggmap/internal/data"
+	"github.com/exepirit/yggmap/internal/data/entity"
 	"time"
 
 	"github.com/exepirit/yggmap/internal/api/dto"
-	"github.com/exepirit/yggmap/internal/data"
-	"github.com/exepirit/yggmap/internal/data/entity"
 )
 
-// Nodes is the resolver for the nodes field.
-func (r *queryResolver) Nodes(ctx context.Context, previous *string, limit int) (*dto.YggdrasilNodesPage, error) {
+// GetNodes is the resolver for the getNodes field.
+func (r *queryResolver) GetNodes(ctx context.Context, previous *string, limit int) (*dto.YggdrasilNodesPage, error) {
 	page := &dto.YggdrasilNodesPage{
 		Items: make([]*dto.YggdrasilNode, 0, limit),
 	}
@@ -41,6 +41,20 @@ func (r *queryResolver) Nodes(ctx context.Context, previous *string, limit int) 
 		return nil
 	})
 	return page, err
+}
+
+// GetNodeByKey is the resolver for the getNodeByKey field.
+func (r *queryResolver) GetNodeByKey(ctx context.Context, publicKey string) (*dto.YggdrasilNode, error) {
+	node, err := r.NodesLoader.Load(ctx, publicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.YggdrasilNode{
+		Address:   node.Address,
+		PublicKey: node.PublicKey.String(),
+		LastSeen:  node.LastSeen.UTC().Format(time.RFC3339),
+	}, nil
 }
 
 // Query returns QueryResolver implementation.

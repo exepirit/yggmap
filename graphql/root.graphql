@@ -1,5 +1,6 @@
 type Query {
-    nodes(previous: String, limit: Int! = 50): YggdrasilNodesPage!
+    getNodes(previous: String, limit: Int! = 50): YggdrasilNodesPage!
+    getNodeByKey(publicKey: String!): YggdrasilNode
 }
 
 type YggdrasilNodesPage {
