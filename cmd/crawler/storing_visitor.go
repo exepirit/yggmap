@@ -26,7 +26,7 @@ func (visitor *StoringVisitor) VisitNode(node yggdrasil.Node) bool {
 		PublicKey: node.PublicKey,
 		LastSeen:  time.Now(),
 	})
-	return len(visitor.foundNodes) < 20
+	return true
 }
 
 func (visitor *StoringVisitor) VisitLink(from, to yggdrasil.PublicKey) bool {

@@ -21,13 +21,13 @@ func main() {
 	slog.SetDefault(slog.New(
 		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			AddSource: false,
-			Level:     slog.LevelInfo,
+			Level:     slog.LevelDebug,
 		}),
 	))
 
 	db, err := bbolt.Open(*dbPath, 0644, nil)
 	if err != nil {
-		slog.Error("Failed to open the database", "error", err)
+		slog.Error("Failed to open the database", "path", *dbPath, "error", err)
 		os.Exit(1)
 	}
 
@@ -60,13 +60,14 @@ func main() {
 
 	err = walker.StartFromLocal()
 	if err != nil && !errors.Is(err, netstat.ErrStopIteration) {
-		slog.Error("Failed to start the network crawling", "error", err)
+		slog.Error("Failed to start the network crawling", "socket", *yggdrasilSock, "error", err)
 		os.Exit(1)
 	}
 
 	err = visitor.Save(context.Background())
 	if err != nil {
-		slog.Error("Failed to save the network graph in the database", "error", err)
+		slog.Error("Failed to save the network graph in the database",
+			"databasePath", *dbPath, "error", err)
 		os.Exit(1)
 	}
 }
