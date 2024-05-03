@@ -6,6 +6,7 @@ import { NotFound } from './pages/_404.jsx';
 import './style.css';
 import {NodeInfo} from "./pages/NodeInfo";
 import {ApolloClient, ApolloProvider, InMemoryCache} from "@apollo/client";
+import {NodesPage} from "./pages/Nodes";
 
 export function App() {
   const client = new ApolloClient({
@@ -20,6 +21,7 @@ export function App() {
         <main>
           <Router>
             <Route path="/" component={Home} />
+            <Route path="/nodes" component={NodesPage}/>
             <Route path="/nodes/:publicKey" component={NodeInfo} />
             <Route default component={NotFound} />
           </Router>
