@@ -5,6 +5,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/exepirit/yggmap/internal/api"
+	"github.com/exepirit/yggmap/internal/api/middleware"
 	"github.com/exepirit/yggmap/internal/data"
 	"github.com/exepirit/yggmap/internal/data/boltdb"
 	"github.com/exepirit/yggmap/internal/data/entity"
@@ -55,6 +56,7 @@ func main() {
 			Provider: linksRepository,
 		},
 	}}))
+	srv.AroundOperations(middleware.Logging)
 
 	http.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
 	http.Handle("/graphql", srv)
