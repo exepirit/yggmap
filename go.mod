@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/99designs/gqlgen v0.17.45
-	github.com/google/uuid v1.6.0
+	github.com/oklog/ulid/v2 v2.1.0
 	github.com/vektah/gqlparser/v2 v2.5.11
 	github.com/yggdrasil-network/yggdrasil-go v0.5.5
 	go.etcd.io/bbolt v1.3.9
@@ -21,6 +21,7 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/gologme/log v1.3.0 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
