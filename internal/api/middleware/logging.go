@@ -18,6 +18,7 @@ func Logging(ctx context.Context, next graphql.OperationHandler) graphql.Respons
 		attrs := []any{
 			slog.String("latency", time.Now().Sub(start).String()),
 			slog.String("operation", operation.OperationName),
+			slog.Any("variables", operation.Variables),
 			slog.Int("responseSize", len(r.Data)),
 		}
 		if r.Errors != nil {
