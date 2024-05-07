@@ -1,13 +1,13 @@
 import {useQuery} from '@apollo/client';
-import {getNodeByIdQueryDocument} from './api';
-import {ErrorBanner} from "../../components/ErrorBanner";
-import {SummarySection} from "./SummarySection";
+import {getNodeByIdQueryDocument} from '../api';
+import {ErrorBanner} from "../../../components/ErrorBanner";
+import {SummarySection, NeighborsView} from "../../../features/nodeInfo/ui";
 
-interface NodeInfoProps {
+interface NodeInfoPageProps {
   publicKey: string;
 }
 
-export function NodeInfo(props: NodeInfoProps) {
+export function NodeInfoPage(props: NodeInfoPageProps) {
   const { data, loading, error } = useQuery(getNodeByIdQueryDocument, { variables: { publicKey: props.publicKey } });
 
   return (
@@ -20,7 +20,8 @@ export function NodeInfo(props: NodeInfoProps) {
           <>
             <h3 className="text-lg">{data.getNodeByKey.address}</h3>
             <span className="badge badge-md badge-primary badge-outline">Node</span>
-            <SummarySection node={data.getNodeByKey}/>
+            <SummarySection node={data.getNodeByKey} />
+            <NeighborsView node={data.getNodeByKey} />
           </>
         }
       </div>

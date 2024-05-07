@@ -4,7 +4,7 @@ import { Header } from './components/Header.jsx';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/_404.jsx';
 import './style.css';
-import {NodeInfo} from "./pages/NodeInfo";
+import {NodeInfoPage} from "./pages/NodeInfo/ui";
 import {ApolloClient, ApolloProvider, InMemoryCache} from "@apollo/client";
 import {NodesPage} from "./pages/Nodes";
 
@@ -22,7 +22,7 @@ export function App() {
           <Router>
             <Route path="/" component={Home} />
             <Route path="/nodes" component={NodesPage}/>
-            <Route path="/nodes/:publicKey" component={NodeInfo} />
+            <Route path="/nodes/:publicKey" component={NodeInfoPage} />
             <Route default component={NotFound} />
           </Router>
         </main>
