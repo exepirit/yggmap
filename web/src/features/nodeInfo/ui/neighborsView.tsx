@@ -1,6 +1,6 @@
 import {useQuery} from "@apollo/client";
-import {getNodeDirectNeighbors} from "../../../pages/NodeInfo/api";
-import {ForceDirectedGraph} from "./forceDirectedGraph";
+import {getNodeDirectNeighbors} from "../api";
+import {ForceDirectedGraph} from "../../../widgets/forceDirectedGraph";
 
 interface NeighborsWidgetProps {
   node: {

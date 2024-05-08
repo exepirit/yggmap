@@ -1,6 +1,6 @@
 import {useQuery} from '@apollo/client';
 import {getNodeByIdQueryDocument} from '../api';
-import {ErrorBanner} from "../../../components/ErrorBanner";
+import {ErrorBanner} from "../../../widgets/errorBanner";
 import {SummarySection, NeighborsView} from "../../../features/nodeInfo/ui";
 
 interface NodeInfoPageProps {
