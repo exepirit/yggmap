@@ -68,6 +68,10 @@ export function ForceDirectedGraph(props: ForceDirectedGraphProps) {
         .attr("cx", d => d.x)
         .attr("cy", d => d.y);
     }
+
+    return () => {
+      simulation.stop();
+    }
   }, []);
 
   return <svg ref={svgRef}/>
