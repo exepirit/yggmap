@@ -9,23 +9,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./web
     strategy:
       matrix:
         node-version: [18.x]
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-
       - name: Install dependencies
         run: |
           npm install
-
+      - name: Linters
+        run: |
+          npx prettier . --check
+          npx eslint .
       - name: Build
         run: |
           npm install
