@@ -6,11 +6,9 @@ package api
 
 import (
 	"context"
-	"time"
-
 	"github.com/exepirit/yggmap/internal/api/dto"
-	"github.com/exepirit/yggmap/internal/data"
 	"github.com/exepirit/yggmap/internal/data/entity"
+	filter2 "github.com/exepirit/yggmap/internal/data/filter"
 )
 
 // Node is the resolver for the node field.
@@ -19,40 +17,35 @@ func (r *queryResolver) Node(ctx context.Context, publicKey string) (*dto.Yggdra
 	if err != nil {
 		return nil, err
 	}
-
-	return &dto.YggdrasilNode{
-		Address:   node.Address,
-		PublicKey: node.PublicKey.String(),
-		LastSeen:  node.LastSeen.UTC().Format(time.RFC3339),
-	}, nil
+	return mapYggdrasilNodeToDto(node), nil
 }
 
 // NodesList is the resolver for the nodesList field.
-func (r *queryResolver) NodesList(ctx context.Context, previous *string, limit int) (*dto.YggdrasilNodesPage, error) {
+func (r *queryResolver) NodesList(ctx context.Context, query *dto.YggdrasilNodesQuery, previous *string, limit int) (*dto.YggdrasilNodesPage, error) {
+	nodesFilter := filter2.Any[entity.YggdrasilNode]()
+	if query != nil {
+		nodesFilter = filter2.None[entity.YggdrasilNode]()
+
+		if query.KeyOrAddress != nil {
+			nodesFilter = filter2.Or(
+				nodesFilter,
+				filter2.NodeAddressContains(*query.KeyOrAddress),
+				filter2.NodeKeyContainsStr(*query.KeyOrAddress),
+			)
+		}
+	}
+
 	page := &dto.YggdrasilNodesPage{
 		Items: make([]*dto.YggdrasilNode, 0, limit),
 	}
-	err := r.NodesLoader.Provider.Iterate(ctx, func(cursor data.Cursor[entity.YggdrasilNode]) error {
-		if previous != nil {
-			cursor.Seek(*previous)
+	err := r.NodesLoader.Provider.Iterate(ctx, previous, func(_ string, node entity.YggdrasilNode) bool {
+		if !nodesFilter(node) {
+			return true
 		}
 
-		for cursor.Next() != "" && limit > 0 {
-			item, err := cursor.Get()
-			if err != nil {
-				return err
-			}
-
-			// TODO: move to mappers
-			page.Items = append(page.Items, &dto.YggdrasilNode{
-				Address:   item.Address,
-				PublicKey: item.PublicKey.String(),
-				LastSeen:  item.LastSeen.UTC().Format(time.RFC3339),
-			})
-
-			limit--
-		}
-		return nil
+		page.Items = append(page.Items, mapYggdrasilNodeToDto(node))
+		limit--
+		return limit > 0
 	})
 	return page, err
 }

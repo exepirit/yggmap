@@ -76,14 +76,29 @@ func (repo *GenericRepository[T]) ProvideBatch(_ context.Context, keys []string,
 	return values, err
 }
 
-func (repo *GenericRepository[T]) Iterate(_ context.Context, cb func(cursor data.Cursor[T]) error) error {
+func (repo *GenericRepository[T]) Iterate(_ context.Context, from *string, cb func(key string, entity T) bool) error {
 	return repo.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket(repo.bucketName)
 		cursor := &GenericCursor[T]{
 			cur: bucket.Cursor(),
 		}
-		cursor.cur.First()
-		return cb(cursor)
+
+		if from != nil {
+			cursor.cur.Seek([]byte(*from))
+		} else {
+			cursor.cur.First()
+		}
+
+		for key := cursor.Next(); key != ""; key = cursor.Next() {
+			value, err := cursor.Get()
+			if err != nil {
+				return err
+			}
+			if !cb(key, value) {
+				return nil
+			}
+		}
+		return nil
 	})
 }
 

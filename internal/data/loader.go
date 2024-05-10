@@ -11,7 +11,7 @@ var (
 
 type Provider[T Entity] interface {
 	ProvideBatch(ctx context.Context, keys []string, skipMissing bool) ([]T, error)
-	Iterate(ctx context.Context, cb func(Cursor[T]) error) error
+	Iterate(ctx context.Context, from *string, cb func(key string, entity T) bool) error
 }
 
 type Cursor[T Entity] interface {
