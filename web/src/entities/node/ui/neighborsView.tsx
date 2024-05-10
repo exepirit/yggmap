@@ -1,31 +1,40 @@
-import {useQuery} from "@apollo/client";
-import {getNodeDirectNeighbors} from "../api";
-import {ForceDirectedGraph} from "../../../widgets/forceDirectedGraph";
-import {YggdrasilNode} from "../model";
+import { useQuery } from "@apollo/client";
+import { getNodeDirectNeighbors } from "../api";
+import { ForceDirectedGraph } from "../../../widgets/forceDirectedGraph";
+import { YggdrasilNode } from "../model";
 
 interface NeighborsWidgetProps {
   node: YggdrasilNode;
 }
 
 export function NeighborsView(props: NeighborsWidgetProps) {
-  const { data } = useQuery(getNodeDirectNeighbors, {variables: {
-    publicKey: props.node.publicKey
-  }});
+  const { data } = useQuery(getNodeDirectNeighbors, {
+    variables: {
+      publicKey: props.node.publicKey,
+    },
+  });
 
   function renderGraph() {
     const nodes = [
-      {id: props.node.publicKey, group: "self"},
-      ...data.getNodeByKey.neighbors.map(link => ({
+      { id: props.node.publicKey, group: "self" },
+      ...data.getNodeByKey.neighbors.map((link) => ({
         id: link.node.publicKey,
-        group: "others"
-      }))
-    ]
-    const links = data.getNodeByKey.neighbors.map(link => ({
+        group: "others",
+      })),
+    ];
+    const links = data.getNodeByKey.neighbors.map((link) => ({
       source: props.node.publicKey,
-      target: link.node.publicKey
+      target: link.node.publicKey,
     }));
 
-    return <ForceDirectedGraph nodes={nodes} links={links} width={250} height={250}/>
+    return (
+      <ForceDirectedGraph
+        nodes={nodes}
+        links={links}
+        width={250}
+        height={250}
+      />
+    );
   }
 
   return (

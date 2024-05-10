@@ -1,5 +1,5 @@
 interface ErrorBannerProps {
-  text?: string
+  text?: string;
 }
 
 /**

@@ -1,5 +1,5 @@
 import moment from "moment/moment";
-import {YggdrasilNode} from "../model";
+import { YggdrasilNode } from "../model";
 
 interface SummarySectionProps {
   node: YggdrasilNode;
@@ -14,18 +14,22 @@ export function SummarySection(props: SummarySectionProps) {
     <div className="py-7">
       <table className="table">
         <tbody>
-        <tr>
-          <td>IPv6 address:</td>
-          <td className="break-all"><code>{props.node.address}</code></td>
-        </tr>
-        <tr>
-          <td>Public key:</td>
-          <td className="break-all"><code>{props.node.publicKey}</code></td>
-        </tr>
-        <tr>
-          <td>Last seen:</td>
-          <td>{moment(props.node.lastSeen).fromNow()}</td>
-        </tr>
+          <tr>
+            <td>IPv6 address:</td>
+            <td className="break-all">
+              <code>{props.node.address}</code>
+            </td>
+          </tr>
+          <tr>
+            <td>Public key:</td>
+            <td className="break-all">
+              <code>{props.node.publicKey}</code>
+            </td>
+          </tr>
+          <tr>
+            <td>Last seen:</td>
+            <td>{moment(props.node.lastSeen).fromNow()}</td>
+          </tr>
         </tbody>
       </table>
     </div>
