@@ -26,12 +26,12 @@ export function NodeInfoPage(props: NodeInfoPageProps) {
         )}
         {!loading && !error && (
           <>
-            <h3 className="text-lg">{data.getNodeByKey.address}</h3>
+            <h3 className="text-lg">{data.node.address}</h3>
             <span className="badge badge-md badge-primary badge-outline">
               Node
             </span>
-            <SummarySection node={data.getNodeByKey} />
-            <NeighborsView node={data.getNodeByKey} />
+            <SummarySection node={data.node} />
+            <NeighborsView node={data.node} />
           </>
         )}
       </div>

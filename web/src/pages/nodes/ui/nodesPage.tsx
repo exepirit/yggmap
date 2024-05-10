@@ -12,7 +12,7 @@ export function NodesPage() {
   return (
     <div className="container md:w-1/2 md:mx-auto mx-4 grid gap-4">
       {data &&
-        data.getNodes.items.map((node) => (
+        data.nodesList.items.map((node) => (
           <div>
             <a href={`/nodes/${node.publicKey}`} className="link link-primary">
               {node.address}
