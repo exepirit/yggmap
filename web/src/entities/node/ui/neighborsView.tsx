@@ -1,12 +1,10 @@
 import {useQuery} from "@apollo/client";
 import {getNodeDirectNeighbors} from "../api";
 import {ForceDirectedGraph} from "../../../widgets/forceDirectedGraph";
+import {YggdrasilNode} from "../model";
 
 interface NeighborsWidgetProps {
-  node: {
-    publicKey: string
-    address: string
-  }
+  node: YggdrasilNode;
 }
 
 export function NeighborsView(props: NeighborsWidgetProps) {

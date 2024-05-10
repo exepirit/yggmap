@@ -1,13 +1,8 @@
 import moment from "moment/moment";
-
-interface YggdrasilNodeSummary {
-  address: string;
-  lastSeen: string;
-  publicKey: string;
-}
+import {YggdrasilNode} from "../model";
 
 interface SummarySectionProps {
-  node: YggdrasilNodeSummary;
+  node: YggdrasilNode;
 }
 
 /**
