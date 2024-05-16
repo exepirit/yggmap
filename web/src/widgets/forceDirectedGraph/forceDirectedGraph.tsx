@@ -1,6 +1,6 @@
 import { useEffect } from "preact/hooks";
 import * as d3 from "d3";
-import { createRef } from "react";
+import { createRef } from "preact";
 
 interface GraphNode extends d3.SimulationNodeDatum {
   id: string;
