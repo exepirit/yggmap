@@ -8,7 +8,7 @@ import (
 	"context"
 	"github.com/exepirit/yggmap/internal/api/dto"
 	"github.com/exepirit/yggmap/internal/data/entity"
-	filter2 "github.com/exepirit/yggmap/internal/data/filter"
+	"github.com/exepirit/yggmap/internal/data/filter"
 )
 
 // Node is the resolver for the node field.
@@ -22,15 +22,15 @@ func (r *queryResolver) Node(ctx context.Context, publicKey string) (*dto.Yggdra
 
 // NodesList is the resolver for the nodesList field.
 func (r *queryResolver) NodesList(ctx context.Context, query *dto.YggdrasilNodesQuery, previous *string, limit int) (*dto.YggdrasilNodesPage, error) {
-	nodesFilter := filter2.Any[entity.YggdrasilNode]()
+	nodesFilter := filter.Any[entity.YggdrasilNode]()
 	if query != nil {
-		nodesFilter = filter2.None[entity.YggdrasilNode]()
+		nodesFilter = filter.None[entity.YggdrasilNode]()
 
 		if query.KeyOrAddress != nil {
-			nodesFilter = filter2.Or(
+			nodesFilter = filter.Or(
 				nodesFilter,
-				filter2.NodeAddressContains(*query.KeyOrAddress),
-				filter2.NodeKeyContainsStr(*query.KeyOrAddress),
+				filter.NodeAddressContains(*query.KeyOrAddress),
+				filter.NodeKeyContainsStr(*query.KeyOrAddress),
 			)
 		}
 	}
