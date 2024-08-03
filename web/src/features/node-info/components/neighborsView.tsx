@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client";
-import { getNodeDirectNeighbors } from "../api";
-import { ForceDirectedGraph } from "../../../widgets/forceDirectedGraph";
-import { YggdrasilNode } from "../model";
+import { getNodeDirectNeighbors } from "../../../entities/node/api";
+import { YggdrasilNode } from "../../../entities/node/model";
+import {ForceDirectedGraph} from "../../../shared/components";
 
 interface NeighborsWidgetProps {
   node: YggdrasilNode;
@@ -17,12 +17,12 @@ export function NeighborsView(props: NeighborsWidgetProps) {
   function renderGraph() {
     const nodes = [
       { id: props.node.publicKey, group: "self" },
-      ...data.getNodeByKey.neighbors.map((link) => ({
+      ...data.node.neighbors.map((link) => ({
         id: link.node.publicKey,
         group: "others",
       })),
     ];
-    const links = data.getNodeByKey.neighbors.map((link) => ({
+    const links = data.node.neighbors.map((link) => ({
       source: props.node.publicKey,
       target: link.node.publicKey,
     }));
@@ -39,7 +39,7 @@ export function NeighborsView(props: NeighborsWidgetProps) {
 
   return (
     <>
-      <h3 className="pb-2 text-lg">Neighbors</h3>
+      <h3 className="pb-2 text-lg">Nearest neighbors</h3>
       <div className="rounded-lg border border-slate-700 xl:w-2/5 lg:w-2/3">
         {data && renderGraph()}
       </div>

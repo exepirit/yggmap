@@ -1,10 +1,11 @@
 type Query {
     node(publicKey: String!): YggdrasilNode
-    nodesList(query: YggdrasilNodesQuery, previous: String, limit: Int! = 50): YggdrasilNodesPage!
+    nodesList(query: YggdrasilNodesQuery, offset: Int! = 0, limit: Int! = 50): YggdrasilNodesPage!
 }
 
 type YggdrasilNodesPage {
     items: [YggdrasilNode!]!
+    total: Int!
 }
 
 input YggdrasilNodesQuery {

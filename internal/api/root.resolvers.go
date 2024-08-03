@@ -6,6 +6,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/exepirit/yggmap/internal/api/dto"
 	"github.com/exepirit/yggmap/internal/data/entity"
 	"github.com/exepirit/yggmap/internal/data/filter"
@@ -21,7 +22,7 @@ func (r *queryResolver) Node(ctx context.Context, publicKey string) (*dto.Yggdra
 }
 
 // NodesList is the resolver for the nodesList field.
-func (r *queryResolver) NodesList(ctx context.Context, query *dto.YggdrasilNodesQuery, previous *string, limit int) (*dto.YggdrasilNodesPage, error) {
+func (r *queryResolver) NodesList(ctx context.Context, query *dto.YggdrasilNodesQuery, offset int, limit int) (*dto.YggdrasilNodesPage, error) {
 	nodesFilter := filter.Any[entity.YggdrasilNode]()
 	if query != nil {
 		nodesFilter = filter.None[entity.YggdrasilNode]()
@@ -38,13 +39,19 @@ func (r *queryResolver) NodesList(ctx context.Context, query *dto.YggdrasilNodes
 	page := &dto.YggdrasilNodesPage{
 		Items: make([]*dto.YggdrasilNode, 0, limit),
 	}
-	err := r.NodesLoader.Provider.Iterate(ctx, previous, func(_ string, node entity.YggdrasilNode) bool {
+	err := r.NodesLoader.Provider.Iterate(ctx, nil, func(_ string, node entity.YggdrasilNode) bool {
 		if !nodesFilter(node) {
+			return true
+		}
+
+		if offset > 0 {
+			offset--
 			return true
 		}
 
 		page.Items = append(page.Items, mapYggdrasilNodeToDto(node))
 		limit--
+
 		return limit > 0
 	})
 	return page, err

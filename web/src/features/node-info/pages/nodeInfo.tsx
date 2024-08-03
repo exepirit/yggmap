@@ -1,7 +1,7 @@
 import { useQuery } from "@apollo/client";
 import { getNodeByIdQueryDocument } from "../api";
-import { ErrorBanner } from "../../../widgets/errorBanner";
-import { SummarySection, NeighborsView } from "../../../entities/node/ui";
+import {ErrorBanner} from "../../../shared/components";
+import {NeighborsView, SummarySection} from "../components";
 
 interface NodeInfoPageProps {
   publicKey: string;
@@ -14,9 +14,7 @@ export function NodeInfoPage(props: NodeInfoPageProps) {
 
   return (
     <div className="container mx-auto px-4">
-      <a className="link" href="/nodes">
-        Back to Search
-      </a>
+      <a className="link" href="/nodes">Back to Search</a>
       <div className="pt-4">
         {loading && (
           <span className="mx-auto loading loading-dots loading-lg"></span>
@@ -24,7 +22,7 @@ export function NodeInfoPage(props: NodeInfoPageProps) {
         {error && (
           <ErrorBanner text={error.networkError?.message || error.message} />
         )}
-        {!loading && !error && (
+        {!loading && !error && data && (
           <>
             <h3 className="text-lg">{data.node.address}</h3>
             <span className="badge badge-md badge-primary badge-outline">

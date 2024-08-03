@@ -5,7 +5,7 @@ export function Header() {
         <div className="navbar-start">
           <ul className="menu menu-horizontal">
             <li>
-              <a href="/">Home</a>
+              <a href="/web/public">Home</a>
             </li>
             <li>
               <a href="/nodes">Nodes</a>

@@ -1,5 +1,5 @@
 import moment from "moment/moment";
-import { YggdrasilNode } from "../model";
+import { YggdrasilNode } from "../../../entities/node/model";
 
 interface SummarySectionProps {
   node: YggdrasilNode;
