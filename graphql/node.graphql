@@ -1,6 +1,0 @@
-type YggdrasilNode {
-    address: String!
-    publicKey: String!
-    lastSeen: String!
-    neighbors: [YggdrasilNodeLink!]!
-}

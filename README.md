@@ -13,9 +13,15 @@ yggmap is a [Yggdrasil network](https://yggdrasil-network.github.io/) informatio
   - [x] Collecting of network structure
   - [x] Store collected information in a database
 - [ ] Explore network structure in a web application
-  - [x] GraphQL API
+  - [x] REST API
   - [ ] Simple search engine across the network nodes
   - [ ] Network or subnetworks graph drawing in the browser
+    - [x] Display graph
+    - [ ] Display each node information
 - [ ] Advanced data collection
   - [ ] Scanning of network hosts and ports
   - [ ] Scanning of public nodes
+- [ ] Advanced graph view
+  - [ ] Visual representation of clusters
+  - [ ] Visual representation of traces to each node
+

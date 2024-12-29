@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     preact({
       prerender: {
-        enabled: true,
+        enabled: false,
         renderTarget: "#app",
         additionalPrerenderRoutes: ["/404"],
       },
@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      "/graphql": "http://localhost:8080",
+      "/api": "http://127.0.0.1:8080",
     },
   },
 });

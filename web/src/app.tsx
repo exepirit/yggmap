@@ -1,31 +1,27 @@
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
-import { LocationProvider, Route, Router } from "preact-iso";
+import { useEffect, useState } from "preact/hooks";
 import "./style.css";
-import {NotFoundPage} from "./features/status/pages";
-import {SearchPage} from "./features/search/pages";
-import {Header} from "./shared/components";
-import {HomePage} from "./features/landing/pages";
-import {NodeInfoPage} from "./features/node-info/pages";
+import ForceGraph3D from 'react-force-graph-3d';
+import { Graph } from "./entities/models";
+import { getNetworkGraph } from "./entities/api";
 
 export function App() {
-  const client = new ApolloClient({
-    uri: "/graphql",
-    cache: new InMemoryCache(),
+  const [ graphData, setGraphData ] = useState<Graph>({
+    nodes: [],
+    links: []
   });
 
+  useEffect(() => {
+    getNetworkGraph()
+      .then(graph => setGraphData(graph))
+      .catch(error => console.error(error));
+  }, []);
+
   return (
-    <ApolloProvider client={client}>
-      <LocationProvider>
-        <Header />
         <main>
-          <Router>
-            <Route path="/" component={HomePage} />
-            <Route path="/nodes" component={SearchPage} />
-            <Route path="/nodes/:publicKey" component={NodeInfoPage} />
-            <Route default component={NotFoundPage} />
-          </Router>
+          <ForceGraph3D
+            graphData={graphData}
+            nodeLabel={node => node.id}
+          />
         </main>
-      </LocationProvider>
-    </ApolloProvider>
   );
 }

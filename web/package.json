@@ -4,23 +4,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "generate": "graphql-codegen"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@apollo/client": "^3.10.1",
-    "@types/d3": "^7.4.3",
-    "d3": "^7.9.0",
-    "graphql": "^16.8.1",
-    "moment": "^2.30.1",
     "preact": "^10.20.0",
     "preact-iso": "^2.6.2",
-    "preact-render-to-string": "^6.4.2"
+    "preact-render-to-string": "^6.4.2",
+    "react-force-graph-3d": "^1.25.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.2.0",
-    "@graphql-codegen/cli": "^5.0.2",
-    "@graphql-codegen/client-preset": "^4.2.5",
     "@preact/preset-vite": "^2.8.2",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.11.1",

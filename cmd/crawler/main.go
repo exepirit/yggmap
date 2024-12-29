@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"github.com/exepirit/yggmap/internal/data/boltdb"
-	"github.com/exepirit/yggmap/internal/data/entity"
+	"github.com/exepirit/yggmap/internal/data/db"
 	"github.com/exepirit/yggmap/pkg/yggdrasil/adminapi"
 	"github.com/exepirit/yggmap/pkg/yggdrasil/netstat"
-	"go.etcd.io/bbolt"
 	"log/slog"
 	"os"
 )
@@ -25,31 +23,15 @@ func main() {
 		}),
 	))
 
-	db, err := bbolt.Open(*dbPath, 0644, nil)
+	dbClient, err := db.ConnectSqlite(context.Background(), db.SqliteConfig{Path: "database.sqlite"})
 	if err != nil {
-		slog.Error("Failed to open the database", "path", *dbPath, "error", err)
+		slog.Error("Failed to create database connection", "error", err)
 		os.Exit(1)
 	}
+	defer dbClient.Close()
 
-	nodeRepository, err := boltdb.CreateRepository[entity.YggdrasilNode](db)
-	if err != nil {
-		slog.Error("Failed to create the YggdrasilNode repository", "error", err)
-		os.Exit(1)
-	}
-	linksRepository, err := boltdb.CreateRepository[entity.NodeLink](db)
-	if err != nil {
-		slog.Error("Failed to create the NodeLink repository", "error", err)
-		os.Exit(1)
-	}
-	snapshotRepository, err := boltdb.CreateRepository[entity.SnapshotMeta](db)
-	if err != nil {
-		slog.Error("Failed to create the SnapshotMeta repository", "error", err)
-		os.Exit(1)
-	}
 	visitor := &StoringVisitor{
-		nodesUpdater:    nodeRepository,
-		linksUpdater:    linksRepository,
-		snapshotUpdater: snapshotRepository,
+		Client: dbClient,
 	}
 
 	client := adminapi.Bind(*yggdrasilSock)

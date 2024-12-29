@@ -51,6 +51,10 @@ func crawlCurrentNodeNeighbors(client *adminapi.Client) ([]yggdrasil.PublicKey, 
 
 	keys := make([]yggdrasil.PublicKey, 0, len(getPeersResponse.Peers))
 	for _, peer := range getPeersResponse.Peers {
+		if !peer.Up {
+			continue
+		}
+
 		key, err := yggdrasil.ParseKey(peer.PublicKey)
 		if err != nil {
 			return nil, fmt.Errorf("invalid node key %q", peer.PublicKey)

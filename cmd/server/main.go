@@ -1,68 +1,61 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/exepirit/yggmap/internal/api"
-	"github.com/exepirit/yggmap/internal/api/middleware"
-	"github.com/exepirit/yggmap/internal/data"
-	"github.com/exepirit/yggmap/internal/data/boltdb"
-	"github.com/exepirit/yggmap/internal/data/entity"
-	"go.etcd.io/bbolt"
 	"log/slog"
 	"net/http"
 	"os"
+
+	"github.com/exepirit/yggmap/internal/api"
+	"github.com/exepirit/yggmap/internal/data/db"
+	web "github.com/exepirit/yggmap/web"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+	slogfiber "github.com/samber/slog-fiber"
 )
 
 func main() {
-	dbPath := flag.String("db.path", "database.db", "Database file path")
 	flag.Parse()
-
-	slog.SetDefault(slog.New(
+	
+	logger := slog.New(
 		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			AddSource: false,
 			Level:     slog.LevelInfo,
 		}),
-	))
+	)
+	slog.SetDefault(logger)
 
-	db, err := bbolt.Open(*dbPath, 0644, nil)
+	dbClient, err := db.ConnectSqlite(context.Background(), db.SqliteConfig{Path: "database.sqlite"})
 	if err != nil {
-		slog.Error("Failed to open the database", "error", err)
+		slog.Error("Failed to create database connection", "error", err)
 		os.Exit(1)
 	}
 
-	nodeRepository, err := boltdb.CreateRepository[entity.YggdrasilNode](db)
-	if err != nil {
-		slog.Error("Failed to create the YggdrasilNode repository", "error", err)
-		os.Exit(1)
-	}
-	linksRepository, err := boltdb.CreateRepository[entity.NodeLink](db)
-	if err != nil {
-		slog.Error("Failed to create the NodeLink repository", "error", err)
-		os.Exit(1)
-	}
+
+	app := fiber.New()
+	app.Use(slogfiber.New(logger))
+	app.Use(recover.New())
+	app.Use(compress.New(compress.Config{
+		Level: compress.LevelBestSpeed,
+	}))
+
+	apiRouter := app.Group("/api")
+	graphController := api.GraphController{Data: dbClient}
+	graphController.AttachController(apiRouter)
+
+	app.Use("/", filesystem.New(filesystem.Config{
+		Root: http.FS(web.Static),
+		PathPrefix: "dist",
+		Browse: true,
+		Index: "index.html",
+	}))
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-
-	srv := handler.NewDefaultServer(api.NewExecutableSchema(api.Config{Resolvers: &api.Resolver{
-		NodesLoader: data.Loader[entity.YggdrasilNode]{
-			Provider: nodeRepository,
-		},
-		LinksLoader: data.Loader[entity.NodeLink]{
-			Provider: linksRepository,
-		},
-	}}))
-	srv.AroundOperations(middleware.Logging)
-
-	http.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
-	http.Handle("/graphql", srv)
-
-	slog.Info("Listening for client requests", "address", ":"+port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		slog.Info("HTTP server error", "error", err)
-	}
+	app.Listen(":"+port)
 }

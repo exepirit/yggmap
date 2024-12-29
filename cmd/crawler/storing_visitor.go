@@ -2,64 +2,82 @@ package main
 
 import (
 	"context"
-	"github.com/exepirit/yggmap/internal/data"
-	"github.com/exepirit/yggmap/internal/data/entity"
+	"fmt"
+	"github.com/exepirit/yggmap/internal/data/ent"
+	"github.com/exepirit/yggmap/internal/data/ent/yggdrasilnode"
 	"github.com/exepirit/yggmap/pkg/yggdrasil"
-	"github.com/oklog/ulid/v2"
 	"log/slog"
-	"time"
 )
 
 // StoringVisitor a crawl.NetworkVisitor implementation, that stores network data in the database.
 type StoringVisitor struct {
-	foundNodes     []entity.YggdrasilNode
-	nodesAdjacency []entity.NodeLink
-
-	nodesUpdater    data.Updater[entity.YggdrasilNode]
-	linksUpdater    data.Updater[entity.NodeLink]
-	snapshotUpdater data.Updater[entity.SnapshotMeta]
+	Client  *ent.Client
+	tx      *ent.Tx
+	counter int
 }
 
 func (visitor *StoringVisitor) VisitNode(node yggdrasil.Node) bool {
 	slog.Info("Found the network node", "key", node.PublicKey.String(), "address", node.PublicKey.IPv6Address())
-	visitor.foundNodes = append(visitor.foundNodes, entity.YggdrasilNode{
-		Address:   node.Address(),
-		PublicKey: node.PublicKey,
-		LastSeen:  time.Now(),
-	})
-	return true
+
+	visitor.mustEnsureTx()
+	err := visitor.tx.YggdrasilNode.Create().
+		SetPublicKey(node.PublicKey.String()).
+		SetAddress(node.Address()).
+		OnConflict().
+		UpdateNewValues().
+		Exec(context.TODO())
+	if err != nil {
+		// TODO: log error
+		return false
+	}
+
+	visitor.counter += 1
+	return visitor.counter < 100
 }
 
 func (visitor *StoringVisitor) VisitLink(from, to yggdrasil.PublicKey) bool {
-	visitor.nodesAdjacency = append(visitor.nodesAdjacency, entity.NodeLink{
-		Out:      from,
-		In:       to,
-		LastSeen: time.Now(),
-	})
+	visitor.mustEnsureTx()
+
+	fromNode, err := visitor.tx.YggdrasilNode.Query().
+		Where(yggdrasilnode.PublicKeyEQ(from.String())).
+		First(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+
+	toNode, err := visitor.tx.YggdrasilNode.Query().
+		Where(yggdrasilnode.PublicKeyEQ(to.String())).
+		First(context.TODO())
+	if ent.IsNotFound(err) {
+		toNode, err = visitor.tx.YggdrasilNode.Create().
+			SetPublicKey(to.String()).
+			SetAddress(to.IPv6Address()).
+			Save(context.TODO())
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	err = visitor.tx.YggdrasilNode.UpdateOne(fromNode).
+		AddNeighbors(toNode).
+		Exec(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+
 	return true
 }
 
+func (visitor *StoringVisitor) mustEnsureTx() {
+	if visitor.tx == nil {
+		var err error
+		visitor.tx, err = visitor.Client.BeginTx(context.TODO(), nil)
+		if err != nil {
+			panic(fmt.Sprintf("begin db transaction error: %s", err.Error()))
+		}
+	}
+}
+
 func (visitor *StoringVisitor) Save(ctx context.Context) error {
-	err := visitor.nodesUpdater.PutBatch(ctx, visitor.foundNodes...)
-	if err != nil {
-		return err
-	}
-	slog.Info("Nodes stored in the database", "count", len(visitor.foundNodes))
-
-	err = visitor.linksUpdater.PutBatch(ctx, visitor.nodesAdjacency...)
-	if err != nil {
-		return err
-	}
-	slog.Info("Links stored in the database", "count", len(visitor.nodesAdjacency))
-
-	snapshot := entity.SnapshotMeta{
-		Identifier: ulid.Make(),
-		CapturedAt: time.Now(),
-		Nodes:      make([]string, 0, len(visitor.foundNodes)),
-	}
-	for _, node := range visitor.foundNodes {
-		snapshot.Nodes = append(snapshot.Nodes, node.ID())
-	}
-
-	return visitor.snapshotUpdater.PutBatch(ctx, snapshot)
+	return visitor.tx.Commit()
 }
