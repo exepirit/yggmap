@@ -13,7 +13,6 @@ func clusterGraph(ctx context.Context, client *ent.YggdrasilNodeClient) error {
 	counter := 0
 	for node := range iterNodes(ctx, client, 50) {
 		nodes[node.ID] = counter
-		slog.Info("Node color set", "color", counter)
 		counter++
 	}
 
@@ -53,6 +52,7 @@ func clusterGraph(ctx context.Context, client *ent.YggdrasilNodeClient) error {
 		if err != nil {
 			return err
 		}
+		slog.Debug("Set node color", "nodeId", id, "color", color)
 	}
 
 	return nil
