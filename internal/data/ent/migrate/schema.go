@@ -13,6 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "public_key", Type: field.TypeString, Unique: true},
 		{Name: "address", Type: field.TypeString},
+		{Name: "cluster", Type: field.TypeInt, Default: 0},
 	}
 	// YggdrasilNodesTable holds the schema information for the "yggdrasil_nodes" table.
 	YggdrasilNodesTable = &schema.Table{

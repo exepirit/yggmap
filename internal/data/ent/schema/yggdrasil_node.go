@@ -21,6 +21,9 @@ func (YggdrasilNode) Fields() []ent.Field {
 		field.String("address").
 			NotEmpty().
 			Immutable(),
+		field.Int("cluster").
+			Comment("A graph cluster identifier").
+			Default(0),
 	}
 }
 

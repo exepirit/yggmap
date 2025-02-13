@@ -46,10 +46,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = visitor.Save(context.Background())
+	ctx := context.Background()
+
+	err = visitor.Save(ctx)
 	if err != nil {
 		slog.Error("Failed to save the network graph in the database",
 			"databasePath", *dbPath, "error", err)
+		os.Exit(1)
+	}
+
+	if err := clusterGraph(ctx, dbClient.YggdrasilNode); err != nil {
+		slog.Error("Failed to mark graph clusters", "error", err)
 		os.Exit(1)
 	}
 }

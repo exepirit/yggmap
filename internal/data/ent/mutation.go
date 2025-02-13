@@ -34,6 +34,8 @@ type YggdrasilNodeMutation struct {
 	id               *int
 	publicKey        *string
 	address          *string
+	cluster          *int
+	addcluster       *int
 	clearedFields    map[string]struct{}
 	neighbors        map[int]struct{}
 	removedneighbors map[int]struct{}
@@ -213,6 +215,62 @@ func (m *YggdrasilNodeMutation) ResetAddress() {
 	m.address = nil
 }
 
+// SetCluster sets the "cluster" field.
+func (m *YggdrasilNodeMutation) SetCluster(i int) {
+	m.cluster = &i
+	m.addcluster = nil
+}
+
+// Cluster returns the value of the "cluster" field in the mutation.
+func (m *YggdrasilNodeMutation) Cluster() (r int, exists bool) {
+	v := m.cluster
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCluster returns the old "cluster" field's value of the YggdrasilNode entity.
+// If the YggdrasilNode object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *YggdrasilNodeMutation) OldCluster(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCluster is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCluster requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCluster: %w", err)
+	}
+	return oldValue.Cluster, nil
+}
+
+// AddCluster adds i to the "cluster" field.
+func (m *YggdrasilNodeMutation) AddCluster(i int) {
+	if m.addcluster != nil {
+		*m.addcluster += i
+	} else {
+		m.addcluster = &i
+	}
+}
+
+// AddedCluster returns the value that was added to the "cluster" field in this mutation.
+func (m *YggdrasilNodeMutation) AddedCluster() (r int, exists bool) {
+	v := m.addcluster
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCluster resets all changes to the "cluster" field.
+func (m *YggdrasilNodeMutation) ResetCluster() {
+	m.cluster = nil
+	m.addcluster = nil
+}
+
 // AddNeighborIDs adds the "neighbors" edge to the YggdrasilNode entity by ids.
 func (m *YggdrasilNodeMutation) AddNeighborIDs(ids ...int) {
 	if m.neighbors == nil {
@@ -301,12 +359,15 @@ func (m *YggdrasilNodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *YggdrasilNodeMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.publicKey != nil {
 		fields = append(fields, yggdrasilnode.FieldPublicKey)
 	}
 	if m.address != nil {
 		fields = append(fields, yggdrasilnode.FieldAddress)
+	}
+	if m.cluster != nil {
+		fields = append(fields, yggdrasilnode.FieldCluster)
 	}
 	return fields
 }
@@ -320,6 +381,8 @@ func (m *YggdrasilNodeMutation) Field(name string) (ent.Value, bool) {
 		return m.PublicKey()
 	case yggdrasilnode.FieldAddress:
 		return m.Address()
+	case yggdrasilnode.FieldCluster:
+		return m.Cluster()
 	}
 	return nil, false
 }
@@ -333,6 +396,8 @@ func (m *YggdrasilNodeMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldPublicKey(ctx)
 	case yggdrasilnode.FieldAddress:
 		return m.OldAddress(ctx)
+	case yggdrasilnode.FieldCluster:
+		return m.OldCluster(ctx)
 	}
 	return nil, fmt.Errorf("unknown YggdrasilNode field %s", name)
 }
@@ -356,6 +421,13 @@ func (m *YggdrasilNodeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAddress(v)
 		return nil
+	case yggdrasilnode.FieldCluster:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCluster(v)
+		return nil
 	}
 	return fmt.Errorf("unknown YggdrasilNode field %s", name)
 }
@@ -363,13 +435,21 @@ func (m *YggdrasilNodeMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *YggdrasilNodeMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addcluster != nil {
+		fields = append(fields, yggdrasilnode.FieldCluster)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *YggdrasilNodeMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case yggdrasilnode.FieldCluster:
+		return m.AddedCluster()
+	}
 	return nil, false
 }
 
@@ -378,6 +458,13 @@ func (m *YggdrasilNodeMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *YggdrasilNodeMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case yggdrasilnode.FieldCluster:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCluster(v)
+		return nil
 	}
 	return fmt.Errorf("unknown YggdrasilNode numeric field %s", name)
 }
@@ -410,6 +497,9 @@ func (m *YggdrasilNodeMutation) ResetField(name string) error {
 		return nil
 	case yggdrasilnode.FieldAddress:
 		m.ResetAddress()
+		return nil
+	case yggdrasilnode.FieldCluster:
+		m.ResetCluster()
 		return nil
 	}
 	return fmt.Errorf("unknown YggdrasilNode field %s", name)

@@ -27,6 +27,27 @@ func (ynu *YggdrasilNodeUpdate) Where(ps ...predicate.YggdrasilNode) *YggdrasilN
 	return ynu
 }
 
+// SetCluster sets the "cluster" field.
+func (ynu *YggdrasilNodeUpdate) SetCluster(i int) *YggdrasilNodeUpdate {
+	ynu.mutation.ResetCluster()
+	ynu.mutation.SetCluster(i)
+	return ynu
+}
+
+// SetNillableCluster sets the "cluster" field if the given value is not nil.
+func (ynu *YggdrasilNodeUpdate) SetNillableCluster(i *int) *YggdrasilNodeUpdate {
+	if i != nil {
+		ynu.SetCluster(*i)
+	}
+	return ynu
+}
+
+// AddCluster adds i to the "cluster" field.
+func (ynu *YggdrasilNodeUpdate) AddCluster(i int) *YggdrasilNodeUpdate {
+	ynu.mutation.AddCluster(i)
+	return ynu
+}
+
 // AddNeighborIDs adds the "neighbors" edge to the YggdrasilNode entity by IDs.
 func (ynu *YggdrasilNodeUpdate) AddNeighborIDs(ids ...int) *YggdrasilNodeUpdate {
 	ynu.mutation.AddNeighborIDs(ids...)
@@ -104,6 +125,12 @@ func (ynu *YggdrasilNodeUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			}
 		}
 	}
+	if value, ok := ynu.mutation.Cluster(); ok {
+		_spec.SetField(yggdrasilnode.FieldCluster, field.TypeInt, value)
+	}
+	if value, ok := ynu.mutation.AddedCluster(); ok {
+		_spec.AddField(yggdrasilnode.FieldCluster, field.TypeInt, value)
+	}
 	if ynu.mutation.NeighborsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -167,6 +194,27 @@ type YggdrasilNodeUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *YggdrasilNodeMutation
+}
+
+// SetCluster sets the "cluster" field.
+func (ynuo *YggdrasilNodeUpdateOne) SetCluster(i int) *YggdrasilNodeUpdateOne {
+	ynuo.mutation.ResetCluster()
+	ynuo.mutation.SetCluster(i)
+	return ynuo
+}
+
+// SetNillableCluster sets the "cluster" field if the given value is not nil.
+func (ynuo *YggdrasilNodeUpdateOne) SetNillableCluster(i *int) *YggdrasilNodeUpdateOne {
+	if i != nil {
+		ynuo.SetCluster(*i)
+	}
+	return ynuo
+}
+
+// AddCluster adds i to the "cluster" field.
+func (ynuo *YggdrasilNodeUpdateOne) AddCluster(i int) *YggdrasilNodeUpdateOne {
+	ynuo.mutation.AddCluster(i)
+	return ynuo
 }
 
 // AddNeighborIDs adds the "neighbors" edge to the YggdrasilNode entity by IDs.
@@ -275,6 +323,12 @@ func (ynuo *YggdrasilNodeUpdateOne) sqlSave(ctx context.Context) (_node *Yggdras
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := ynuo.mutation.Cluster(); ok {
+		_spec.SetField(yggdrasilnode.FieldCluster, field.TypeInt, value)
+	}
+	if value, ok := ynuo.mutation.AddedCluster(); ok {
+		_spec.AddField(yggdrasilnode.FieldCluster, field.TypeInt, value)
 	}
 	if ynuo.mutation.NeighborsCleared() {
 		edge := &sqlgraph.EdgeSpec{

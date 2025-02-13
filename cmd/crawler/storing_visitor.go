@@ -27,7 +27,7 @@ func (visitor *StoringVisitor) VisitNode(node yggdrasil.Node) bool {
 		UpdateNewValues().
 		Exec(context.TODO())
 	if err != nil {
-		// TODO: log error
+		slog.Error("Failed to store discovered node", "error", err)
 		return false
 	}
 

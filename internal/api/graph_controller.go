@@ -26,7 +26,10 @@ func (ctrl GraphController) GetGraphData(ctx *fiber.Ctx) error {
 		Links: make([]graphLinkDTO, 0),
 	}
 	for _, node := range nodes {
-		data.Nodes = append(data.Nodes, graphNodeDTO{ID: node.PublicKey})
+		data.Nodes = append(data.Nodes, graphNodeDTO{
+			ID:    node.PublicKey,
+			Group: node.Cluster,
+		})
 		neighbors, err := node.QueryNeighbors().All(ctx.Context())
 		if err != nil {
 			return err
@@ -48,7 +51,8 @@ type GraphDataDTO struct {
 }
 
 type graphNodeDTO struct {
-	ID string `json:"id"`
+	ID    string `json:"id"`
+	Group int    `json:"group"`
 }
 
 type graphLinkDTO struct {

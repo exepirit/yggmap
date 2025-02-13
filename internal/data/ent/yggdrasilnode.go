@@ -20,6 +20,8 @@ type YggdrasilNode struct {
 	PublicKey string `json:"publicKey,omitempty"`
 	// Address holds the value of the "address" field.
 	Address string `json:"address,omitempty"`
+	// A graph cluster identifier
+	Cluster int `json:"cluster,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the YggdrasilNodeQuery when eager-loading is set.
 	Edges        YggdrasilNodeEdges `json:"edges"`
@@ -49,7 +51,7 @@ func (*YggdrasilNode) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case yggdrasilnode.FieldID:
+		case yggdrasilnode.FieldID, yggdrasilnode.FieldCluster:
 			values[i] = new(sql.NullInt64)
 		case yggdrasilnode.FieldPublicKey, yggdrasilnode.FieldAddress:
 			values[i] = new(sql.NullString)
@@ -85,6 +87,12 @@ func (yn *YggdrasilNode) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field address", values[i])
 			} else if value.Valid {
 				yn.Address = value.String
+			}
+		case yggdrasilnode.FieldCluster:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field cluster", values[i])
+			} else if value.Valid {
+				yn.Cluster = int(value.Int64)
 			}
 		default:
 			yn.selectValues.Set(columns[i], values[i])
@@ -132,6 +140,9 @@ func (yn *YggdrasilNode) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("address=")
 	builder.WriteString(yn.Address)
+	builder.WriteString(", ")
+	builder.WriteString("cluster=")
+	builder.WriteString(fmt.Sprintf("%v", yn.Cluster))
 	builder.WriteByte(')')
 	return builder.String()
 }

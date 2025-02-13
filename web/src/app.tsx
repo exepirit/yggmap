@@ -21,6 +21,8 @@ export function App() {
           <ForceGraph3D
             graphData={graphData}
             nodeLabel={node => node.id}
+            nodeAutoColorBy={node => node.group.toString()}
+            cooldownTime={5000}
           />
         </main>
   );

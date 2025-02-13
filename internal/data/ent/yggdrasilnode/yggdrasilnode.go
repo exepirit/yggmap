@@ -16,6 +16,8 @@ const (
 	FieldPublicKey = "public_key"
 	// FieldAddress holds the string denoting the address field in the database.
 	FieldAddress = "address"
+	// FieldCluster holds the string denoting the cluster field in the database.
+	FieldCluster = "cluster"
 	// EdgeNeighbors holds the string denoting the neighbors edge name in mutations.
 	EdgeNeighbors = "neighbors"
 	// Table holds the table name of the yggdrasilnode in the database.
@@ -29,6 +31,7 @@ var Columns = []string{
 	FieldID,
 	FieldPublicKey,
 	FieldAddress,
+	FieldCluster,
 }
 
 var (
@@ -52,6 +55,8 @@ var (
 	PublicKeyValidator func(string) error
 	// AddressValidator is a validator for the "address" field. It is called by the builders before save.
 	AddressValidator func(string) error
+	// DefaultCluster holds the default value on creation for the "cluster" field.
+	DefaultCluster int
 )
 
 // OrderOption defines the ordering options for the YggdrasilNode queries.
@@ -70,6 +75,11 @@ func ByPublicKey(opts ...sql.OrderTermOption) OrderOption {
 // ByAddress orders the results by the address field.
 func ByAddress(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAddress, opts...).ToFunc()
+}
+
+// ByCluster orders the results by the cluster field.
+func ByCluster(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCluster, opts...).ToFunc()
 }
 
 // ByNeighborsCount orders the results by neighbors count.

@@ -4,7 +4,8 @@ export interface Graph {
 }
 
 export interface GraphNode {
-  id: string
+  id: string;
+  group: number;
 }
 
 export interface GraphLink {

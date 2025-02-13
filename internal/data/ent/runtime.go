@@ -21,4 +21,8 @@ func init() {
 	yggdrasilnodeDescAddress := yggdrasilnodeFields[1].Descriptor()
 	// yggdrasilnode.AddressValidator is a validator for the "address" field. It is called by the builders before save.
 	yggdrasilnode.AddressValidator = yggdrasilnodeDescAddress.Validators[0].(func(string) error)
+	// yggdrasilnodeDescCluster is the schema descriptor for cluster field.
+	yggdrasilnodeDescCluster := yggdrasilnodeFields[2].Descriptor()
+	// yggdrasilnode.DefaultCluster holds the default value on creation for the cluster field.
+	yggdrasilnode.DefaultCluster = yggdrasilnodeDescCluster.Default.(int)
 }

@@ -33,6 +33,20 @@ func (ync *YggdrasilNodeCreate) SetAddress(s string) *YggdrasilNodeCreate {
 	return ync
 }
 
+// SetCluster sets the "cluster" field.
+func (ync *YggdrasilNodeCreate) SetCluster(i int) *YggdrasilNodeCreate {
+	ync.mutation.SetCluster(i)
+	return ync
+}
+
+// SetNillableCluster sets the "cluster" field if the given value is not nil.
+func (ync *YggdrasilNodeCreate) SetNillableCluster(i *int) *YggdrasilNodeCreate {
+	if i != nil {
+		ync.SetCluster(*i)
+	}
+	return ync
+}
+
 // AddNeighborIDs adds the "neighbors" edge to the YggdrasilNode entity by IDs.
 func (ync *YggdrasilNodeCreate) AddNeighborIDs(ids ...int) *YggdrasilNodeCreate {
 	ync.mutation.AddNeighborIDs(ids...)
@@ -55,6 +69,7 @@ func (ync *YggdrasilNodeCreate) Mutation() *YggdrasilNodeMutation {
 
 // Save creates the YggdrasilNode in the database.
 func (ync *YggdrasilNodeCreate) Save(ctx context.Context) (*YggdrasilNode, error) {
+	ync.defaults()
 	return withHooks(ctx, ync.sqlSave, ync.mutation, ync.hooks)
 }
 
@@ -80,6 +95,14 @@ func (ync *YggdrasilNodeCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ync *YggdrasilNodeCreate) defaults() {
+	if _, ok := ync.mutation.Cluster(); !ok {
+		v := yggdrasilnode.DefaultCluster
+		ync.mutation.SetCluster(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (ync *YggdrasilNodeCreate) check() error {
 	if _, ok := ync.mutation.PublicKey(); !ok {
@@ -97,6 +120,9 @@ func (ync *YggdrasilNodeCreate) check() error {
 		if err := yggdrasilnode.AddressValidator(v); err != nil {
 			return &ValidationError{Name: "address", err: fmt.Errorf(`ent: validator failed for field "YggdrasilNode.address": %w`, err)}
 		}
+	}
+	if _, ok := ync.mutation.Cluster(); !ok {
+		return &ValidationError{Name: "cluster", err: errors.New(`ent: missing required field "YggdrasilNode.cluster"`)}
 	}
 	return nil
 }
@@ -132,6 +158,10 @@ func (ync *YggdrasilNodeCreate) createSpec() (*YggdrasilNode, *sqlgraph.CreateSp
 	if value, ok := ync.mutation.Address(); ok {
 		_spec.SetField(yggdrasilnode.FieldAddress, field.TypeString, value)
 		_node.Address = value
+	}
+	if value, ok := ync.mutation.Cluster(); ok {
+		_spec.SetField(yggdrasilnode.FieldCluster, field.TypeInt, value)
+		_node.Cluster = value
 	}
 	if nodes := ync.mutation.NeighborsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -201,6 +231,24 @@ type (
 	}
 )
 
+// SetCluster sets the "cluster" field.
+func (u *YggdrasilNodeUpsert) SetCluster(v int) *YggdrasilNodeUpsert {
+	u.Set(yggdrasilnode.FieldCluster, v)
+	return u
+}
+
+// UpdateCluster sets the "cluster" field to the value that was provided on create.
+func (u *YggdrasilNodeUpsert) UpdateCluster() *YggdrasilNodeUpsert {
+	u.SetExcluded(yggdrasilnode.FieldCluster)
+	return u
+}
+
+// AddCluster adds v to the "cluster" field.
+func (u *YggdrasilNodeUpsert) AddCluster(v int) *YggdrasilNodeUpsert {
+	u.Add(yggdrasilnode.FieldCluster, v)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -247,6 +295,27 @@ func (u *YggdrasilNodeUpsertOne) Update(set func(*YggdrasilNodeUpsert)) *Yggdras
 		set(&YggdrasilNodeUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCluster sets the "cluster" field.
+func (u *YggdrasilNodeUpsertOne) SetCluster(v int) *YggdrasilNodeUpsertOne {
+	return u.Update(func(s *YggdrasilNodeUpsert) {
+		s.SetCluster(v)
+	})
+}
+
+// AddCluster adds v to the "cluster" field.
+func (u *YggdrasilNodeUpsertOne) AddCluster(v int) *YggdrasilNodeUpsertOne {
+	return u.Update(func(s *YggdrasilNodeUpsert) {
+		s.AddCluster(v)
+	})
+}
+
+// UpdateCluster sets the "cluster" field to the value that was provided on create.
+func (u *YggdrasilNodeUpsertOne) UpdateCluster() *YggdrasilNodeUpsertOne {
+	return u.Update(func(s *YggdrasilNodeUpsert) {
+		s.UpdateCluster()
+	})
 }
 
 // Exec executes the query.
@@ -301,6 +370,7 @@ func (yncb *YggdrasilNodeCreateBulk) Save(ctx context.Context) ([]*YggdrasilNode
 	for i := range yncb.builders {
 		func(i int, root context.Context) {
 			builder := yncb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*YggdrasilNodeMutation)
 				if !ok {
@@ -460,6 +530,27 @@ func (u *YggdrasilNodeUpsertBulk) Update(set func(*YggdrasilNodeUpsert)) *Yggdra
 		set(&YggdrasilNodeUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCluster sets the "cluster" field.
+func (u *YggdrasilNodeUpsertBulk) SetCluster(v int) *YggdrasilNodeUpsertBulk {
+	return u.Update(func(s *YggdrasilNodeUpsert) {
+		s.SetCluster(v)
+	})
+}
+
+// AddCluster adds v to the "cluster" field.
+func (u *YggdrasilNodeUpsertBulk) AddCluster(v int) *YggdrasilNodeUpsertBulk {
+	return u.Update(func(s *YggdrasilNodeUpsert) {
+		s.AddCluster(v)
+	})
+}
+
+// UpdateCluster sets the "cluster" field to the value that was provided on create.
+func (u *YggdrasilNodeUpsertBulk) UpdateCluster() *YggdrasilNodeUpsertBulk {
+	return u.Update(func(s *YggdrasilNodeUpsert) {
+		s.UpdateCluster()
+	})
 }
 
 // Exec executes the query.

@@ -63,6 +63,11 @@ func Address(v string) predicate.YggdrasilNode {
 	return predicate.YggdrasilNode(sql.FieldEQ(FieldAddress, v))
 }
 
+// Cluster applies equality check predicate on the "cluster" field. It's identical to ClusterEQ.
+func Cluster(v int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldEQ(FieldCluster, v))
+}
+
 // PublicKeyEQ applies the EQ predicate on the "publicKey" field.
 func PublicKeyEQ(v string) predicate.YggdrasilNode {
 	return predicate.YggdrasilNode(sql.FieldEQ(FieldPublicKey, v))
@@ -191,6 +196,46 @@ func AddressEqualFold(v string) predicate.YggdrasilNode {
 // AddressContainsFold applies the ContainsFold predicate on the "address" field.
 func AddressContainsFold(v string) predicate.YggdrasilNode {
 	return predicate.YggdrasilNode(sql.FieldContainsFold(FieldAddress, v))
+}
+
+// ClusterEQ applies the EQ predicate on the "cluster" field.
+func ClusterEQ(v int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldEQ(FieldCluster, v))
+}
+
+// ClusterNEQ applies the NEQ predicate on the "cluster" field.
+func ClusterNEQ(v int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldNEQ(FieldCluster, v))
+}
+
+// ClusterIn applies the In predicate on the "cluster" field.
+func ClusterIn(vs ...int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldIn(FieldCluster, vs...))
+}
+
+// ClusterNotIn applies the NotIn predicate on the "cluster" field.
+func ClusterNotIn(vs ...int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldNotIn(FieldCluster, vs...))
+}
+
+// ClusterGT applies the GT predicate on the "cluster" field.
+func ClusterGT(v int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldGT(FieldCluster, v))
+}
+
+// ClusterGTE applies the GTE predicate on the "cluster" field.
+func ClusterGTE(v int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldGTE(FieldCluster, v))
+}
+
+// ClusterLT applies the LT predicate on the "cluster" field.
+func ClusterLT(v int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldLT(FieldCluster, v))
+}
+
+// ClusterLTE applies the LTE predicate on the "cluster" field.
+func ClusterLTE(v int) predicate.YggdrasilNode {
+	return predicate.YggdrasilNode(sql.FieldLTE(FieldCluster, v))
 }
 
 // HasNeighbors applies the HasEdge predicate on the "neighbors" edge.
