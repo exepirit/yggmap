@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/exepirit/yggmap/web/assets"
 	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/exepirit/yggmap/internal/api"
 	"github.com/exepirit/yggmap/internal/data/db"
-	web "github.com/exepirit/yggmap/web"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
@@ -19,7 +19,7 @@ import (
 
 func main() {
 	flag.Parse()
-	
+
 	logger := slog.New(
 		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			AddSource: false,
@@ -34,7 +34,6 @@ func main() {
 		os.Exit(1)
 	}
 
-
 	app := fiber.New()
 	app.Use(slogfiber.New(logger))
 	app.Use(recover.New())
@@ -46,16 +45,17 @@ func main() {
 	graphController := api.GraphController{Data: dbClient}
 	graphController.AttachController(apiRouter)
 
+	handlers := &Handlers{
+		database: dbClient,
+	}
+	app.Get("/", handlers.HandleIndex)
 	app.Use("/", filesystem.New(filesystem.Config{
-		Root: http.FS(web.Static),
-		PathPrefix: "dist",
-		Browse: true,
-		Index: "index.html",
+		Root: http.FS(assets.FS),
 	}))
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-	app.Listen(":"+port)
+	app.Listen(":" + port)
 }

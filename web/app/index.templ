@@ -1,0 +1,45 @@
+package app
+
+templ Index(graphData GraphData) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<meta name="color-scheme" content="light dark">
+			<link rel="stylesheet" href="/style.css">
+			<title>yggmap - Yggdrasil Network Map</title>
+		</head>
+		<body>
+			<main>@NetworkGraph(graphData)</main>
+		</body>
+	</html>
+}
+
+type NodeData struct {
+	ID string `json:"id"`
+	Group int `json:"group"`
+}
+
+type LinkData struct {
+	Source string `json:"source"`
+	Target string `json:"target"`
+}
+
+type GraphData struct {
+	Nodes []NodeData `json:"nodes"`
+	Links []LinkData `json:"links"`
+}
+
+templ NetworkGraph(graphData GraphData) {
+	<div id="networkGraph"></div>
+	<script src="https://unpkg.com/3d-force-graph@1.76.1/dist/3d-force-graph.min.js"></script>
+
+	@templ.JSONScript("graphData", graphData)
+	<script>
+		const graphData = JSON.parse(document.getElementById('graphData').textContent);
+		const Graph = new ForceGraph3D(document.getElementById('networkGraph'))
+			.graphData(graphData)
+			.nodeAutoColorBy((node) => node.group);
+	</script>
+}
